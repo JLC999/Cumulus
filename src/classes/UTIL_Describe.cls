@@ -179,11 +179,33 @@ public class UTIL_Describe {
     */
     public static Map<String, Schema.DescribeFieldResult> getAllFieldsDescribe(String objectName) {
 
-        // make sure we have this field's schema mapped
+        // make sure we have this object's schema mapped
         fillFieldMapsForObject(objectName);
 
         Map<String, Schema.DescribeFieldResult> fieldMap = fieldDescribes.get(objectName);
         return fieldMap;
+    }
+
+    /*******************************************************************************************************
+    * @description Returns the Name field of any given object.
+    * @param objectName the name of the object to look up
+    * @return String the API name of the Name field
+    */
+    public static String getNameField(String objectName) {
+        String nameField = 'Name';
+
+        Map<String, Schema.DescribeFieldResult> mapObjectFields = getAllFieldsDescribe(objectName);
+
+        if (!mapObjectFields.containsKey(nameField)) {
+            nameField = null;
+            for (String relatedFieldName : mapObjectFields.keySet()) {
+                if (mapObjectFields.get(relatedFieldName).isNameField()) {
+                    return relatedFieldName;
+                }
+            }
+        }
+        
+        return nameField;
     }
 
     /*******************************************************************************************************
@@ -373,6 +395,60 @@ public class UTIL_Describe {
             if (dfr.isNillable() || src.get(strF)!= null) {    
                 dst.put(strF, src.get(strF));
             }
+        }
+    }
+
+    /** @description Returns a list of SelectOptions for a given object and picklist field name.
+    * @param objectName The name of the object.
+    * @param fieldName The name of the field.
+    * @return List<SelectOption> The select options for this picklist field.
+    */
+
+    public static List<SelectOption> getSelectOptions(String objectName, String fieldName) {
+        Schema.DescribeFieldResult describeField = UTIL_Describe.getFieldDescribe(objectName, fieldName);
+        List<SelectOption> result = new List<SelectOption>();
+        if (describeField.getType() == Schema.DisplayType.PICKLIST) {
+            for (Schema.PicklistEntry entry : describeField.getPicklistValues()) {
+                if (entry.isActive()) {
+                    result.add(new SelectOption(entry.getLabel(), entry.getValue()));
+                }
+            }
+        }
+        return result;
+    }
+
+    /** @description Returns the default SelectOption for a given object and picklist field name.
+    * @param objectName The name of the object.
+    * @param fieldName The name of the field.
+    * @return String The default select option for this picklist field.
+    */
+    public static String getDefaultSelectOption(String objectName, String fieldName) {
+        Schema.DescribeFieldResult describeField = getFieldDescribe(objectName, fieldName);
+        if (describeField.getType() == Schema.DisplayType.PICKLIST) {
+            for (Schema.PicklistEntry entry : describeField.getPicklistValues()) {
+                if (entry.isDefaultValue()) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    /** @description For a given object and field, verifies that the field is accessible and updateable,
+    * throwing an exception if it isn't.*/
+    public static void checkFieldFLS(String objectName, String fieldName) {
+        DescribeFieldResult dfr = getFieldDescribe(
+            UTIL_Namespace.StrTokenNSPrefix(objectName), 
+            fieldName.endsWith('__c')?UTIL_Namespace.StrTokenNSPrefix(fieldName):fieldName
+        );
+        if (dfr == null || !dfr.isAccessible() || !dfr.isUpdateable()) {
+            throw (new permsException(
+                string.format(
+                    label.flsError, 
+                    new string[]{UTIL_Namespace.StrTokenNSPrefix(objectName) + '.' + 
+                                 UTIL_Namespace.StrTokenNSPrefix(fieldName)}
+                )
+            ));
         }
     }
 

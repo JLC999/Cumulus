@@ -204,12 +204,12 @@ public with sharing class STG_PanelADDRVerification_CTRL extends STG_Panel {
                         servicesURLMap.put(((ADDR_IValidator)classInstance).getServiceName(), ((ADDR_IValidator)classInstance).getDefaultURL());
                     }
                 } catch(exception ex) {
-                    // just ignore this class and continue.
+                    // we don't want to display an error, because we blindly pickup classes from any package that have ADDR in their title!
                 }
             }
-        }         
+        }
     }
-    
+
     /*******************************************************************************************************
     * @description Saves the address verification settings.
     * @return PageReference The page to redirect to. None, in this case.

@@ -18,7 +18,9 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>Edit</actionName>
-        <type>Default</type>
+        <content>EP_ManageEPTemplate</content>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Visualforce</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>Follow</actionName>
@@ -30,7 +32,9 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>New</actionName>
-        <type>Default</type>
+        <content>EP_ManageEPTemplate</content>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Visualforce</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>SaveEdit</actionName>
@@ -47,6 +51,7 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
+    <description>An Engagement Plan Template defines the process and associated set of tasks required to complete an Engagement Plan. To apply the process to a particular record, you must assign the Engagement Plan to the record.</description>
     <enableActivities>true</enableActivities>
     <enableBulkApi>false</enableBulkApi>
     <enableFeeds>false</enableFeeds>
@@ -55,6 +60,16 @@
     <enableSearch>true</enableSearch>
     <enableSharing>false</enableSharing>
     <enableStreamingApi>false</enableStreamingApi>
+    <fieldSets>
+        <fullName>ManageEPTemplateFS</fullName>
+        <availableFields>
+            <field>OwnerId</field>
+            <isFieldManaged>false</isFieldManaged>
+            <isRequired>false</isRequired>
+        </availableFields>
+        <description>Engagement Plan Template field set to add custom fields to the custom user interface for editing Engagement Plan Templates and related Engagement Plan Tasks.</description>
+        <label>Manage EP Template FS</label>
+    </fieldSets>
     <fields>
         <fullName>Automatically_Update_Child_Task_Due_Date__c</fullName>
         <defaultValue>true</defaultValue>
@@ -82,6 +97,7 @@
             </picklistValues>
             <sorted>false</sorted>
         </picklist>
+        <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Picklist</type>
     </fields>
@@ -110,6 +126,7 @@
             </picklistValues>
             <sorted>false</sorted>
         </picklist>
+        <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Picklist</type>
     </fields>

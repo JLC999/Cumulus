@@ -178,7 +178,14 @@ public without sharing class HH_Households_TDTM extends TDTM_Runnable {
                             hhNamingFields = HH_HouseholdNaming.iNaming.setHouseholdNameFieldsOnContact();
                             
                         for (String fieldName : hhNamingFields) {
-                            if (String.valueOf(newcmap.get(c.id).get(fieldName)) != String.valueOf(oldcmap.get(c.id).get(fieldName))) {
+                            // make sure to use case sensitive comparison
+                            string strName = String.valueOf(newcmap.get(c.id).get(fieldName));
+                            if (strName == null)
+                                strName = '';
+                            string strNameOld = String.valueOf(oldcmap.get(c.id).get(fieldName));
+                            if (strNameOld == null)
+                                strNameOld = '';
+                            if (!strName.equals(strNameOld)) {
                                 householdnameupdates.add(c.npo02__household__c);
                                 break;
                             }
@@ -371,18 +378,20 @@ public without sharing class HH_Households_TDTM extends TDTM_Runnable {
             Integer i = 0;
             for (Contact c : contacts)
             {
-                if (lsr[i].isSuccess() == true)
-                {
-                    //write the new Household Ids to the Contacts
-                    Contact clone = c.Clone(true,false);
-                    clone.npo02__household__c = lsr[i].getId();
-                    contactUpdates.add(clone);
+                if (!recordTypesOnCons || !conRecordTypesToExclude.contains((id)c.get('RecordTypeId'))){
+                    if (lsr[i].isSuccess() == true)
+                    {
+                        //write the new Household Ids to the Contacts
+                        Contact clone = c.Clone(true,false);
+                        clone.npo02__household__c = lsr[i].getId();
+                        contactUpdates.add(clone);
+                    }
+                    else{
+                        Database.Error err = lsr[i].getErrors()[0];                 
+                        c.addError(err.getMessage());
+                    }
+                    i += 1;
                 }
-                else{
-                    Database.Error err = lsr[i].getErrors()[0];                 
-                    c.addError(err.getMessage());
-                }
-                i += 1;
             }
             
             if (contactUpdates.size() > 0) {

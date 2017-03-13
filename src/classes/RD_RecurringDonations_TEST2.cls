@@ -812,34 +812,6 @@ private with sharing class RD_RecurringDonations_TEST2 {
         controller.saveCISettings();
     }
 *************************************************************************/
-
-   static testmethod void test(){ 
-        if (strTestOnly != '*' && strTestOnly != 'test') return;
-             
-        npe03__Custom_Field_Mapping__c cfm = new npe03__Custom_Field_Mapping__c(
-        npe03__Recurring_Donation_Field__c = 'Name',
-        npe03__Opportunity_Field__c = 'Description',
-        Name = 'CFMName00001-Test'
-        );
-        insert cfm;
-        
-        Test.startTest(); 
-        
-        //Schedule the test job 
-        insert new Schedulable__c(Name = 'test rd Sched', Class_Name__c = 'RD_RecurringDonations_SCHED', Active__c = true);
-        String jobId = System.schedule('Global Scheduler', '0 0 0 3 9 ? 2022', new UTIL_MasterSchedulable()); 
-
-        CronTrigger ct =[SELECT id,CronExpression,TimesTriggered,NextFireTime 
-        FROM CronTrigger WHERE id=:jobId]; 
-        //Verify the expressions are the same 
-        System.assertEquals('0 0 0 3 9 ? 2022',ct.CronExpression); 
-        //Verify the job has not run 
-        System.assertEquals(0,ct.TimesTriggered); 
-        //Verify the next time the job will run 
-        System.assertEquals('2022-09-03 00:00:00',String.valueOf(ct.NextFireTime)); 
-        
-        Test.stopTest();        
-    } 
     
     // from RD_AddDonationsBTN_CTRL
     public static testMethod void testBTN(){
@@ -1138,5 +1110,48 @@ private with sharing class RD_RecurringDonations_TEST2 {
             system.assertEquals(listOpp28th[i].CloseDate.Month(), listOpp30th[i].CloseDate.Month());
             system.assertEquals(listOpp28th[i].CloseDate.Month(), listOppEnd[i].CloseDate.Month());
         }
+    }
+
+    static testMethod void testOrphanedRd() {
+        if (strTestOnly != '*' && strTestOnly != 'testOrphanedRd') return;
+
+        Contact con = new Contact(LastName='test');
+        insert con;
+
+        List<npe03__Recurring_Donation__c> rdList = new List<npe03__Recurring_Donation__c>();
+        rdList.add(new npe03__Recurring_Donation__c(
+            Name='Orphan',
+            npe03__Open_Ended_Status__c= Label.npe03.RecurringDonationOpenStatus
+        ));
+        rdList.add(new npe03__Recurring_Donation__c(
+            Name='Orphan2',
+            npe03__Open_Ended_Status__c= Label.npe03.RecurringDonationOpenStatus
+        ));
+        rdList.add(new npe03__Recurring_Donation__c(
+            Name = 'test',
+            npe03__Contact__c = con.id,
+            npe03__Amount__c = 100,
+            npe03__Installments__c = 2,
+            npe03__Installment_Period__c = Label.npe03.RecurringDonationInstallmentPeriodMonthly,
+            npe03__Date_Established__c = Date.newinstance(1970,6,12),
+            npe03__Schedule_Type__c = Label.npe03.RecurringDonationMultiplyValue,
+            npe03__Open_Ended_Status__c = Label.npe03.RecurringDonationOpenStatus,
+            npe03__Next_Payment_Date__c = System.today()
+        ));
+
+
+        //disable triggers to skip opp creation and validation, which would prevent the insertion of the orphan
+        //orphaned RDs may exist due to a historical lack of RD cascade deletion when contacts and accounts were deleted
+        TDTM_TriggerHandler.disableTDTM = true;
+        insert rdList;
+        TDTM_TriggerHandler.disableTDTM = false;
+
+        Test.startTest();
+        Database.executeBatch(new RD_RecurringDonations_BATCH(), 10);
+        Test.stopTest();
+
+        List<Opportunity> rdOpps = [SELECT Id FROM Opportunity WHERE npe03__Recurring_Donation__c IN :rdList];
+        System.assertEquals(12,rdOpps.size(), 'Twelve opps should be created for the well formed recurring donation.');
+
     }
 }

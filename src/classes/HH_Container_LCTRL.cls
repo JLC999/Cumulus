@@ -153,9 +153,14 @@ public with sharing class HH_Container_LCTRL {
             else
                 strSoql += ' where npo02__Household__c = :hhId ';
 
-            strSoql += ' order by npo02__Household_Naming_Order__c, CreatedDate';
+            strSoql += ' order by npo02__Household_Naming_Order__c ASC NULLS LAST, Primary_Contact__c DESC, CreatedDate ';
 
-            return database.query(strSoql);
+            list<Contact> listCon = database.query(strSoql);
+            // let's update household naming order so the client doesn't have to worry about nulls.
+            for (integer i = 0; i < listCon.size(); i++) {
+                listCon[i].npo02__Household_Naming_Order__c = i;
+            }
+            return listCon;
         } catch (Exception ex) {
             throw new AuraHandledException(ex.getMessage());
         }
@@ -174,12 +179,14 @@ public with sharing class HH_Container_LCTRL {
         set<String> setCheckUpdate = setUpdateableContactFields();
         
         for (string strF : listStrField) {
-
-            // check field level security
-            DescribeFieldResult dfr = UTIL_Describe.getFieldDescribe('Contact', strF);
-            if (dfr == null || !dfr.isAccessible() || ((setCheckUpdate.contains(strF) && !dfr.isUpdateable())))
-                throw (new permsException(string.format(label.flsError, new string[]{'Contact' + '.' + strF})));
             
+            if (!strF.contains('.')) {
+                // check field level security (but not on compound lookup fields)
+                DescribeFieldResult dfr = UTIL_Describe.getFieldDescribe('Contact', strF);
+                if (dfr == null || !dfr.isAccessible() || ((setCheckUpdate.contains(strF) && !dfr.isUpdateable())))
+                    throw (new permsException(string.format(label.flsError, new string[]{'Contact' + '.' + strF})));
+            }
+                
             strSoql += strComma + strF;
             strComma = ',';
         }

@@ -30,6 +30,8 @@
 /**
 * @author Salesforce.org
 * @date 2014 
+* @group Rollups
+* @group-content ../../ApexDocContent/Rollups.htm
 * @description test Class which holds test methods for common utilities, 
 * such as detecting whether we are in a managed package, and some string helpers.
 */
@@ -595,23 +597,20 @@ public with sharing class RLLP_OppRollup_TEST2 {
             Date datClose = System.Today();
 
             // create & insert contact(s)
-            Contact[] TestCons = UTIL_UnitTestData_TEST.CreateMultipleTestContacts(10) ;
+            Contact[] TestCons = UTIL_UnitTestData_TEST.CreateMultipleTestContacts(10);
             insert TestCons;
 
             // create new opps
             Opportunity[] newOpps = UTIL_UnitTestData_TEST.OppsForContactListByRecTypeId ( TestCons, null, UTIL_UnitTestData_TEST.getClosedWonStage(), datClose, 1000 , giftRecordTypeIdForTests ,null);
             insert newOpps;
 
-            account testacct = new account(name='testacct');
-            insert testacct;
-
-            Opportunity[] lastYearOpps = UTIL_UnitTestData_TEST.OppsForContactListByRecTypeId(new list<Contact>{TestCons[5]}, null, UTIL_UnitTestData_TEST.getClosedWonStage(), datClose.addyears(-1), 150 , giftRecordTypeIdForTests ,null);
+            Opportunity[] lastYearOpps = UTIL_UnitTestData_TEST.OppsForContactListByRecTypeId(new list<Contact>{TestCons[8]}, null, UTIL_UnitTestData_TEST.getClosedWonStage(), datClose.addyears(-1), 150 , giftRecordTypeIdForTests ,null);
             insert lastYearOpps;
 
-            Opportunity[] last2YearOpps = UTIL_UnitTestData_TEST.OppsForContactListByRecTypeId(new list<Contact>{TestCons[8]}, null, UTIL_UnitTestData_TEST.getClosedWonStage(), datClose.addyears(-2), 100 , giftRecordTypeIdForTests ,null);
+            Opportunity[] last2YearOpps = UTIL_UnitTestData_TEST.OppsForContactListByRecTypeId(new list<Contact>{TestCons[5]}, null, UTIL_UnitTestData_TEST.getClosedWonStage(), datClose.addyears(-2), 100 , giftRecordTypeIdForTests ,null);
             insert last2YearOpps;
 
-            //grab two random contacts and two random Opps and create an OCR for them
+            //grab two random contacts and two random Opps where they are not the primary contact and create an OCR for them
             id TCid1 = TestCons[5].id;
             id TCid2 = TestCons[8].id;
 
@@ -998,27 +997,4 @@ public with sharing class RLLP_OppRollup_TEST2 {
         system.assertEquals (100,ct.npo02__TotalOppAmount__c);
         system.assertEquals(4, ct.npo02__Household__r.npo02__Household_ID__c);
     }
-    /*********************************************************************************************************
-    * @description Inserts a new RLLP_OPPRollup_SCHED and verifes the schedule set matches CrontTrigger 
-    * CronExpression
-    */
-    static testmethod void testOppRollupSchedule(){ 
-        if (strTestOnly != '*' && strTestOnly != 'testOppRollupSchedule') return;
-        Test.startTest(); 
-
-        //Schedule the test job 
-        insert new Schedulable__c(Name = 'test Opp Sched', Class_Name__c = 'RLLP_OppRollup_SCHED', Active__c = true);
-        String jobId = System.schedule('Global Scheduler', '0 0 0 3 9 ? 2022', new UTIL_MasterSchedulable());
-
-        CronTrigger ct =[SELECT id,CronExpression,TimesTriggered,NextFireTime 
-        FROM CronTrigger WHERE id=:jobId]; 
-        //Verify the expressions are the same 
-        System.assertEquals('0 0 0 3 9 ? 2022',ct.CronExpression); 
-        //Verify the job has not run 
-        System.assertEquals(0,ct.TimesTriggered); 
-        //Verify the next time the job will run 
-        System.assertEquals('2022-09-03 00:00:00',String.valueOf(ct.NextFireTime)); 
-
-        Test.stopTest();
-    } 
 }

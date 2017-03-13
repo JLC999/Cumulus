@@ -178,7 +178,15 @@ public with sharing class OPP_OpportunityNaming implements OPP_INaming {
         mapOppIdSettings = new map<string,Opportunity_Naming_Settings__c>();
         for (Opportunity_Naming_Settings__c ons : listOppNamingSettings) {
 
-            List<Id> oppRecTypeIds = string.isBlank(ons.Opportunity_Record_Types__c) ? new List<Id>() : ons.Opportunity_Record_Types__c.split(';', 0);
+            List<String> oppRecTypeStrings = string.isBlank(ons.Opportunity_Record_Types__c) ? new List<String>() : ons.Opportunity_Record_Types__c.split(';', 0);
+            List<Id> oppRecTypeIds = new List<Id>();
+            for (String recTypeString : oppRecTypeStrings) {
+                if (!String.isBlank(recTypeString)) {
+                    try {
+                        oppRecTypeIds.add((id)recTypeString);
+                    } catch (Exception e) {}
+                }
+            }
 
             if (oppRecTypeIds.isEmpty()) {
                 mapOppIdSettings.put('', ons);
@@ -208,7 +216,7 @@ public with sharing class OPP_OpportunityNaming implements OPP_INaming {
     * @return string Individual or Organizational, based on the opportunity's attribution.
     ********************************************************************************************************/
     public static string getOppAttribution(Opportunity opp) {
-        if (opp.Account.npe01__SYSTEMIsIndividual__c)
+        if (opp.Account == null || opp.Account.npe01__SYSTEMIsIndividual__c)
             return Label.oppNamingIndividual;
         else
             return Label.oppNamingOrganizational;
@@ -370,8 +378,8 @@ public with sharing class OPP_OpportunityNaming implements OPP_INaming {
             }
 
             //traverse parent relationships until the last one
-            if (thisObj!=null) {
-                for (string parentObj : splitField) {
+            for (string parentObj : splitField) {
+                if (thisObj!=null) {
                     thisObj = thisObj.getsObject(parentObj);
                 }
             }

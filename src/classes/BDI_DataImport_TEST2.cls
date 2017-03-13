@@ -30,7 +30,9 @@
 /**
 * @author Salesforce.org
 * @date 2014
-* @description tests specific to the Data Importer 
+* @group Batch Data Import
+* @group-content ../../ApexDocContent/BatchDataImport.htm
+* @description tests specific to the Batch Data Importer user interface and error handling
 */
 
 @isTest
@@ -43,10 +45,10 @@ private with sharing class BDI_DataImport_TEST2 {
     private static string strTestOnly = '*';
     
     /*********************************************************************************************************
-    operation:
-        run data import through the visualforce page
-    verify:
-        all code tested in controller
+    * @description operation: 
+    *    run data import through the visualforce page 
+    * verify: 
+    *    all code tested in controller
     **********************************************************************************************************/            
     static testMethod void TestBDIVisualforcePage() {
         if (strTestOnly != '*' && strTestOnly != 'TestBDIVisualforcePage') return;
@@ -114,10 +116,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        test validation rules for settings on visualforce page
-    verify:
-        all code tested in controller
+    * @description operation: 
+    *    test validation rules for settings on visualforce page 
+    * verify: 
+    *    all code tested in controller
     **********************************************************************************************************/            
     static testMethod void TestBDIVisualforcePageValidation() {
         if (strTestOnly != '*' && strTestOnly != 'TestBDIVisualforcePageValidation') return;
@@ -147,10 +149,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        test the Delete All Data Import Records button
-    verify:
-        all records deleted
+    * @description operation: 
+    *    test the Delete All Data Import Records button 
+    * verify: 
+    *    all records deleted
     **********************************************************************************************************/            
     static testMethod void TestDeleteAllDIRecordsBtn() {
         if (strTestOnly != '*' && strTestOnly != 'TestDeleteAllDIRecordsBtn') return;
@@ -182,10 +184,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        test the Delete Imported Data Import Records button
-    verify:
-        all records deleted
+    * @description operation: 
+    *    test the Delete Imported Data Import Records button 
+    * verify: 
+    *    all records deleted
     **********************************************************************************************************/            
     static testMethod void TestDeleteImportedDIRecordsBtn() {
         if (strTestOnly != '*' && strTestOnly != 'TestDeleteImportedDIRecordsBtn') return;
@@ -220,10 +222,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import matching contacts within multiple di records in the same batch, using different email fields
-    verify:
-        only one contact created
+    * @description operation: 
+    *    import matching contacts within multiple di records in the same batch, using different email fields 
+    * verify: 
+    *    only one contact created
     **********************************************************************************************************/            
     static testMethod void ManyDIDuplicateEmailNewContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIDuplicateEmailNewContacts') return;
@@ -260,10 +262,103 @@ private with sharing class BDI_DataImport_TEST2 {
     }
     
     /*********************************************************************************************************
-    operation:
-        import existing contacts within multiple di records in the same batch, using different email fields
-    verify:
-        all contacts matched
+    * @description operation: 
+    *    import matching contacts within multiple di records in the same batch, using different phone fields 
+    * verify: 
+    *    only one contact created
+    **********************************************************************************************************/            
+    static testMethod void ManyDIDuplicatePhoneNewContacts() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIDuplicatePhoneNewContacts') return;
+            
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Home_Phone__c='123-456-7890'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Work_Phone__c='123-456-7890'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Mobile_Phone__c='123-456-7890'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Other_Phone__c='123-456-7890'));
+        insert listDI;
+        
+        Data_Import_Settings__c diSettings = UTIL_CustomSettingsFacade.getDataImportSettings();
+        diSettings.Contact_Matching_Rule__c = 'Firstname,Lastname,Phone';
+        
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, Name from Contact];
+        system.assertEquals(1, listCon.size());
+        system.assertEquals('c1 C1', listCon[0].Name);
+
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, HouseholdAccountImported__c, 
+            Contact2Imported__c, Contact2ImportStatus__c from DataImport__c order by Contact1ImportStatus__c];
+        system.assertEquals(4, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[1].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[2].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[3].Contact1Imported__c, listCon[0].Id);
+        system.assertNotEquals(null, listDI[0].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[1].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[2].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[3].HouseholdAccountImported__c);
+        system.assertEquals(label.bdiCreated, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+        system.assertEquals(label.bdiMatched, listDI[2].Contact1ImportStatus__c);        
+        system.assertEquals(label.bdiMatched, listDI[3].Contact1ImportStatus__c);        
+    }
+
+    /*********************************************************************************************************
+    * @description operation: 
+    *    import matching contacts within multiple di records in the same batch, updating different fields 
+    * verify: 
+    *    only one contact created
+    **********************************************************************************************************/            
+    static testMethod void ManyDIDuplicateNewContactManyFields() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIDuplicateNewContactManyFields') return;
+            
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Personal_Email__c='c1@foo.com', 
+            Contact1_Title__c='myTitle'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Personal_Email__c='c1@foo.com', 
+            Contact1_Birthdate__c=system.Today()));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Personal_Email__c='c1@foo.com', 
+            Contact1_Home_Phone__c='123-456-7890'));
+        insert listDI;
+          
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, Name, Title, Birthdate, HomePhone from Contact];
+        system.assertEquals(1, listCon.size());
+        system.assertEquals('c1 C1', listCon[0].Name);
+        system.assertEquals('myTitle', listCon[0].Title);
+        system.assertEquals(system.Today(), listCon[0].Birthdate);
+        system.assertEquals('123-456-7890', listCon[0].HomePhone);
+
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, HouseholdAccountImported__c, 
+            Contact2Imported__c, Contact2ImportStatus__c from DataImport__c order by Contact1ImportStatus__c];
+        system.assertEquals(3, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[1].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[2].Contact1Imported__c, listCon[0].Id);
+        system.assertNotEquals(null, listDI[0].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[1].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[2].HouseholdAccountImported__c);
+        system.assertEquals(label.bdiCreated, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+    }
+
+    /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using different email fields 
+    * verify: 
+    *    all contacts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIDuplicateEmailExistingContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIDuplicateEmailExistingContacts') return;
@@ -310,10 +405,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import existing contacts within multiple di records in the same batch, using overlapping email fields
-    verify:
-        all contacts matched
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using overlapping email fields 
+    * verify: 
+    *    all contacts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIOverlappingEmailExistingContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIOverlappingEmailExistingContacts') return;
@@ -357,11 +452,62 @@ private with sharing class BDI_DataImport_TEST2 {
         system.assertEquals(label.bdiMatched, listDI[2].Contact1ImportStatus__c);        
     }
 
+    /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using overlapping phone fields 
+    * verify: 
+    *    all contacts matched
+    **********************************************************************************************************/            
+    static testMethod void ManyDIOverlappingPhoneExistingContacts() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIOverlappingPhoneExistingContacts') return;
+            
+         // existing contacts
+        list<Contact> listConExisting = new list<Contact>();
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Phone='123-456-7890'));
+        insert listConExisting;
+ 
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Home_Phone__c='123-456-7890'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Home_Phone__c='123-456-7890', Contact1_Mobile_Phone__c='999-888-7777'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Work_Phone__c='999-888-7777'));
+        insert listDI;
+          
+        Data_Import_Settings__c diSettings = UTIL_CustomSettingsFacade.getDataImportSettings();
+        diSettings.Contact_Matching_Rule__c = 'Firstname,Lastname,Phone';
+        
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, Name, Email, HomePhone, MobilePhone, Phone, npe01__WorkPhone__c from Contact order by Lastname];
+        system.assertEquals(1, listCon.size());
+        system.assertEquals('123-456-7890', listCon[0].HomePhone);
+        system.assertEquals('999-888-7777', listCon[0].MobilePhone);
+        system.assertEquals('999-888-7777', listCon[0].npe01__WorkPhone__c);
+        
+        
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, HouseholdAccountImported__c, 
+            Contact2Imported__c, Contact2ImportStatus__c from DataImport__c order by Contact1_Lastname__c];
+        system.assertEquals(3, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[1].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[2].Contact1Imported__c, listCon[0].Id);
+        system.assertNotEquals(null, listDI[0].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[1].HouseholdAccountImported__c);
+        system.assertNotEquals(null, listDI[2].HouseholdAccountImported__c);
+        system.assertEquals(label.bdiMatched, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+        system.assertEquals(label.bdiMatched, listDI[2].Contact1ImportStatus__c);        
+    }
+
    /*********************************************************************************************************
-    operation:
-        import existing contacts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all contacts matched
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all contacts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdMatchingExistingContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdMatchingExistingContacts') return;
@@ -400,10 +546,195 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import existing contacts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all contacts matched
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using Salesforce Id matching 
+    * verify: 
+    *    all contacts matched
+    **********************************************************************************************************/            
+    static testMethod void ManyDISalesforceIdMatchingExistingContacts() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDISalesforceIdMatchingExistingContacts') return;
+            
+         // existing contacts
+        list<Contact> listConExisting = new list<Contact>();
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Email='foo@bar.com', Title='t1'));
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Email='c1@c1.com', Title='t2'));
+        insert listConExisting;
+        
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c=null, Contact1_Lastname__c=null, Contact1_Personal_Email__c=null, 
+            Contact1_Title__c='t1Updated', Contact1Imported__c=listConExisting[0].Id));
+        listDI.add(new DataImport__c(Contact1_Firstname__c=null, Contact1_Lastname__c=null, Contact1_Personal_Email__c=null, 
+            Contact1_Title__c='t2Updated', Contact1Imported__c=listConExisting[1].Id));
+        insert listDI;
+        
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, Name, Email, Title from Contact order by Title];
+        system.assertEquals(2, listCon.size());
+        
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, Contact2Imported__c, Contact2ImportStatus__c, Contact1_Title__c 
+            from DataImport__c 
+            order by Contact1_Title__c];
+        system.assertEquals(2, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[1].Contact1Imported__c, listCon[1].Id);
+        system.assertEquals(listDI[0].Contact1_Title__c, listCon[0].Title);
+        system.assertEquals(listDI[1].Contact1_Title__c, listCon[1].Title);
+        system.assertEquals(label.bdiMatched, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+    }
+
+   /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contacts by Id only, and specify new household member, using Salesforce Id matching 
+    * verify: 
+    *    all contacts matched or created
+    **********************************************************************************************************/            
+    static testMethod void ManyDISalesforceIdMatchingExistingAndNewContacts() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDISalesforceIdMatchingExistingAndNewContacts') return;
+            
+         // existing contacts
+        list<Contact> listConExisting = new list<Contact>();
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Email='foo@bar.com', Title='t1'));
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Email='c1@c1.com', Title='t2'));
+        insert listConExisting;
+        
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c=null, Contact1_Lastname__c=null, Contact1_Personal_Email__c=null, 
+            Contact1_Title__c='t1Updated', Contact1Imported__c=listConExisting[0].Id, 
+            Contact2_Firstname__c='c3', Contact2_Title__c='t3'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c=null, Contact1_Lastname__c=null, Contact1_Personal_Email__c=null, 
+            Contact1_Title__c='t2Updated', Contact1Imported__c=listConExisting[1].Id, 
+            Contact2_Firstname__c='c4', Contact2_Lastname__c='C4', Contact2_Title__c='t4'));
+        insert listDI;
+        
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, AccountId, Firstname, Lastname, Email, Title from Contact order by Title];
+        system.assertEquals(4, listCon.size());
+        
+        // verify each c2 was created in existing c1's household
+        system.assertEquals(listCon[0].AccountId, listCon[2].AccountId);
+        system.assertEquals(listCon[1].AccountId, listCon[3].AccountId);
+        
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, Contact2Imported__c, Contact2ImportStatus__c, Contact1_Title__c 
+            from DataImport__c 
+            order by Contact1_Title__c];
+        system.assertEquals(2, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[1].Contact1Imported__c, listCon[1].Id);
+        system.assertEquals(listDI[0].Contact1_Title__c, listCon[0].Title);
+        system.assertEquals(listDI[1].Contact1_Title__c, listCon[1].Title);
+        system.assertEquals(label.bdiMatched, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiMatched, listDI[1].Contact1ImportStatus__c);        
+        system.assertEquals(label.bdiCreated, listDI[0].Contact2ImportStatus__c);
+        system.assertEquals(label.bdiCreated, listDI[1].Contact2ImportStatus__c);        
+    }
+
+   /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contacts by Id only, and specify new household member, using Salesforce Id matching 
+    * verify: 
+    *    all contacts matched or created
+    **********************************************************************************************************/            
+    static testMethod void OneDISalesforceIdMatchingExistingAndNewContact() {
+        if (strTestOnly != '*' && strTestOnly != 'OneDISalesforceIdMatchingExistingAndNewContact') return;
+            
+         // existing contacts
+        list<Contact> listConExisting = new list<Contact>();
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1'));
+        insert listConExisting;
+        
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c=null, Contact1_Lastname__c=null, Contact1_Personal_Email__c=null, 
+            Contact1Imported__c=listConExisting[0].Id, 
+            Contact2_Firstname__c='c2', Contact2_Lastname__c='C2'));
+        insert listDI;
+        
+        Data_Import_Settings__c diSettings = UTIL_CustomSettingsFacade.getDataImportSettings();
+        diSettings.Contact_Matching_Rule__c = 'Firstname;Lastname';
+
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, AccountId, Firstname, Lastname, Email, Title from Contact order by Title];
+        system.assertEquals(2, listCon.size());
+        
+        // verify each c2 was created in existing c1's household
+        system.assertEquals(listCon[0].AccountId, listCon[1].AccountId);
+        
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, Contact2Imported__c, Contact2ImportStatus__c, Contact1_Title__c 
+            from DataImport__c 
+            order by Contact1_Title__c];
+        system.assertEquals(1, listDI.size());
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[0].Contact1_Title__c, listCon[0].Title);
+        system.assertEquals(label.bdiMatched, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(label.bdiCreated, listDI[0].Contact2ImportStatus__c);
+    }
+
+   /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contact into a different existing household account 
+    * verify: 
+    *    contact moved to specified account
+    **********************************************************************************************************/            
+    static testMethod void SingleDISalesforceIdMatchingExistingHousehold() {
+        if (strTestOnly != '*' && strTestOnly != 'SingleDISalesforceIdMatchingExistingHousehold') return;
+            
+         // existing contacts
+        list<Contact> listConExisting = new list<Contact>();
+        listConExisting.add(new Contact(Firstname='c1', Lastname='C1', Email='c1@c1.com', Title='t1'));
+        listConExisting.add(new Contact(Firstname='c2', Lastname='C2', Email='c2@c2.com', Title='t2'));
+        insert listConExisting;
+        
+        listConExisting = [select Id, Name, AccountId, Email, Title from Contact order by Title];
+        
+        list<DataImport__c> listDI = new list<DataImport__c>();
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Personal_Email__c='c1@c1.com', 
+            Contact1_Title__c='t1Updated', HouseholdAccountImported__c=listConExisting[1].AccountId));
+        insert listDI;
+        
+        //run batch data import
+        Test.StartTest();
+        BDI_DataImport_BATCH bdi = new BDI_DataImport_BATCH();
+        ID ApexJobId = Database.executeBatch(bdi, 10);
+        Test.stopTest();
+    
+        // verify expected results
+        list<Contact> listCon = [select Id, Name, AccountId, Email, Title from Contact order by Title];
+        system.assertEquals(2, listCon.size());
+        
+        listDI = [select Contact1Imported__c, Contact1ImportStatus__c, Contact2Imported__c, Contact2ImportStatus__c, 
+            Contact1_Title__c, HouseholdAccountImported__c 
+            from DataImport__c 
+            order by Contact1_Title__c];
+        system.assertEquals(listDI[0].Contact1Imported__c, listCon[0].Id);
+        system.assertEquals(listDI[0].Contact1_Title__c, listCon[0].Title);
+        system.assertEquals(label.bdiMatched, listDI[0].Contact1ImportStatus__c);
+        system.assertEquals(listDI[0].HouseholdAccountImported__c, listCon[1].AccountId);
+        system.assertEquals(listCon[0].AccountId, listCon[1].AccountId);
+    }
+
+   /*********************************************************************************************************
+    * @description operation: 
+    *    import existing contacts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all contacts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdNotMatchingExistingContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdNotMatchingExistingContacts') return;
@@ -442,10 +773,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import new contacts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all contacts created, since unique Id's provided
+    * @description operation: 
+    *    import new contacts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all contacts created, since unique Id's provided
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdNewContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdNewContacts') return;
@@ -478,10 +809,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import existing & new contacts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all contacts matched
+    * @description operation: 
+    *    import existing & new contacts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all contacts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdMatchingNewAndExistingContacts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdMatchingNewAndExistingContacts') return;
@@ -535,10 +866,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import existing accounts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all accounts matched
+    * @description operation: 
+    *    import existing accounts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all accounts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdMatchingExistingAccounts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdMatchingExistingAccounts') return;
@@ -578,10 +909,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import new accounts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all accounts matched
+    * @description operation: 
+    *    import new accounts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all accounts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdNewAccounts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdNewAccounts') return;
@@ -613,10 +944,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
    /*********************************************************************************************************
-    operation:
-        import existing accounts within multiple di records in the same batch, using Custom Unique Id matching
-    verify:
-        all accounts matched
+    * @description operation: 
+    *    import existing accounts within multiple di records in the same batch, using Custom Unique Id matching 
+    * verify: 
+    *    all accounts matched
     **********************************************************************************************************/            
     static testMethod void ManyDIUniqueIdMatchingNewAndExistingAccounts() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIUniqueIdMatchingNewAndExistingAccounts') return;
@@ -669,10 +1000,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import new contacts with a variety of emails 
-    verify:
-        correct preferred email set for contacts with only one email specified
+    * @description operation: 
+    *    import new contacts with a variety of emails  
+    * verify: 
+    *    correct preferred email set for contacts with only one email specified
         preferred email left null for contants with multiple emails specified
     **********************************************************************************************************/            
     static testMethod void testPreferredEmailAutoSetting() {
@@ -719,10 +1050,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import new contacts with a variety of phones 
-    verify:
-        correct preferred phone set for contacts with only one phone specified
+    * @description operation: 
+    *    import new contacts with a variety of phones  
+    * verify: 
+    *    correct preferred phone set for contacts with only one phone specified
         preferred Phone left null for contants with multiple Phones specified
     **********************************************************************************************************/            
     static testMethod void testPreferredPhoneAutoSetting() {
@@ -768,10 +1099,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import contacts using different matching rules
-    verify:
-        only one contact created
+    * @description operation: 
+    *    import contacts using different matching rules 
+    * verify: 
+    *    only one contact created
     **********************************************************************************************************/            
     static testMethod void ManyDIMultiContactMatchRules1() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules1') return;
@@ -793,15 +1124,33 @@ private with sharing class BDI_DataImport_TEST2 {
         if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules5') return;
         ManyDIMultiContactMatchRules('Firstname,Email');
     }
+    static testMethod void ManyDIMultiContactMatchRules6() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules6') return;
+        ManyDIMultiContactMatchRules('Firstname,Lastname,Phone');
+    }
+    static testMethod void ManyDIMultiContactMatchRules7() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules7') return;
+        ManyDIMultiContactMatchRules('Firstname,Phone');
+    }
+    static testMethod void ManyDIMultiContactMatchRules8() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules8') return;
+        ManyDIMultiContactMatchRules('Lastname,Phone');
+    }
+    static testMethod void ManyDIMultiContactMatchRules9() {
+        if (strTestOnly != '*' && strTestOnly != 'ManyDIMultiContactMatchRules9') return;
+        ManyDIMultiContactMatchRules('Phone');
+    }
     static void ManyDIMultiContactMatchRules(string strRule) {            
         list<DataImport__c> listDI = new list<DataImport__c>();
         listDI.add(new DataImport__c(Account1_Name__c='a0', Contact1_Firstname__c='c0', Contact1_Lastname__c='C0'));
         listDI.add(new DataImport__c(Account1_Name__c='a1', Contact1_Firstname__c=null, Contact1_Lastname__c='C1'));
         listDI.add(new DataImport__c(Account1_Name__c='a2', Contact1_Firstname__c='c2', Contact1_Lastname__c=null));
-        listDI.add(new DataImport__c(Account1_Name__c='a3', Contact1_Firstname__c='c3', Contact1_Lastname__c='C3', Contact1_Personal_Email__c='c3@C3.com'));   
+        listDI.add(new DataImport__c(Account1_Name__c='a3', Contact1_Firstname__c='c3', Contact1_Lastname__c='C3', 
+            Contact1_Personal_Email__c='c3@C3.com', Contact1_Home_Phone__c='123-456-7890'));   
         
         // one additional di that will always match given the current rule.
-        listDI.add(new DataImport__c(Account1_Name__c='a4', Contact1_Firstname__c='c3', Contact1_Lastname__c='C3', Contact1_Personal_Email__c='c3@C3.com'));                
+        listDI.add(new DataImport__c(Account1_Name__c='a4', Contact1_Firstname__c='c3', Contact1_Lastname__c='C3', 
+            Contact1_Personal_Email__c='c3@C3.com', Contact1_Home_Phone__c='123-456-7890'));                
         insert listDI;
           
         Data_Import_Settings__c diSettings = UTIL_CustomSettingsFacade.getDataImportSettings();
@@ -837,17 +1186,17 @@ private with sharing class BDI_DataImport_TEST2 {
     }
     
     /*********************************************************************************************************
-    operation:
-        import contacts with some missing required fields
-    verify:
-        contacts with errors not created, failures logged in di records
+    * @description operation: 
+    *    import contacts with some missing required fields 
+    * verify: 
+    *    contacts with errors not created, failures logged in di records
         contacts without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDISomeInvalidContactData() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDISomeInvalidContactData') return;
             
         list<DataImport__c> listDI = new list<DataImport__c>();
-        listDI.add(new DataImport__c(Contact1_Firstname__c='c0', Contact1_Lastname__c=null, Contact1_Personal_Email__c='c0@foo.com'));
+        listDI.add(new DataImport__c(Contact1_Firstname__c='c0', Contact1_Lastname__c=null, Contact1_Personal_Email__c='c0@foo.com', Contact2_Firstname__c='c0b', Contact2_Lastname__c='C0b', Account1_Name__c='foo'));
         listDI.add(new DataImport__c(Contact1_Firstname__c='c1', Contact1_Lastname__c='C1', Contact1_Work_Email__c='c1@foo.com'));
         listDI.add(new DataImport__c(Contact2_Firstname__c='c2', Contact2_Lastname__c=null, Contact2_Alternate_Email__c='c2@foo.com'));
         listDI.add(new DataImport__c(Contact2_Firstname__c='c3', Contact2_Lastname__c='C3', Contact2_Alternate_Email__c='c3@foo.com'));
@@ -865,7 +1214,7 @@ private with sharing class BDI_DataImport_TEST2 {
         system.assertEquals(4, listCon.size());
         system.assertEquals('c1 C1', listCon[0].Name);
 
-        listDI = [select Status__c, FailureInformation__c, 
+        listDI = [select Status__c, FailureInformation__c, Contact1_Firstname__c, Account1ImportStatus__c,
             Contact1Imported__c, Contact1ImportStatus__c, Contact2Imported__c, Contact2ImportStatus__c 
             from DataImport__c order by Contact1ImportStatus__c];
         system.assertEquals(5, listDI.size());
@@ -875,7 +1224,14 @@ private with sharing class BDI_DataImport_TEST2 {
             if (listDI[i].Contact1Imported__c != null) {
                 system.assertEquals(label.bdiCreated, listDI[i].Contact1ImportStatus__c);
                 cC1++;
+            } 
+            
+            // make sure when c1 fails, we don't incorrectly mark c2 as created
+            if (listDI[i].Contact1_Firstname__c == 'c0') {
+                system.assertEquals(null, listDI[i].Contact2ImportStatus__c);
+                system.assertEquals(null, listDI[i].Account1ImportStatus__c);
             }
+            
             if (listDI[i].Contact2Imported__c != null) {
                 system.assertEquals(label.bdiCreated, listDI[i].Contact2ImportStatus__c);            
                 cC2++;
@@ -891,11 +1247,11 @@ private with sharing class BDI_DataImport_TEST2 {
     }
     
     /*********************************************************************************************************
-    operation:
-        import contacts with some data that forces commit errors
-    verify:
-        contacts with errors not created, failures logged in di records
-        contacts without errors are created
+    * @description operation: 
+    *    import contacts with some data that forces commit errors 
+    * verify: 
+    *    contacts with errors not created, failures logged in di records
+    *    contacts without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDITestContactDataErrorHandling() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDITestContactDataErrorHandling') return;
@@ -945,11 +1301,11 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import accounts with some data that forces commit errors
-    verify:
-        accounts with errors not created, failures logged in di records
-        accounts without errors are created
+    * @description operation: 
+    *    import accounts with some data that forces commit errors 
+    * verify: 
+    *    accounts with errors not created, failures logged in di records
+    *    accounts without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDITestAccountDataErrorHandling() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDITestAccountDataErrorHandling') return;
@@ -1002,11 +1358,11 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import donations with some data that forces commit errors
-    verify:
-        donations with errors not created, failures logged in di records
-        donations without errors are created
+    * @description operation: 
+    *    import donations with some data that forces commit errors 
+    * verify: 
+    *    donations with errors not created, failures logged in di records
+    *    donations without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDITestDonationDataErrorHandling() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDITestDonationDataErrorHandling') return;
@@ -1047,18 +1403,18 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import donations with campaigns that have some data that forces commit errors
-    verify:
-        campaigns with errors not created, failures logged in di records
-        campaigns without errors are created
+    * @description operation: 
+    *    import donations with campaigns that have some data that forces commit errors 
+    * verify: 
+    *    campaigns with errors not created, failures logged in di records
+    *    campaigns without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDITestCampaignDataErrorHandling() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDITestCampaignDataErrorHandling') return;
             
         list<DataImport__c> listDI = new list<DataImport__c>();
         listDI.add(new DataImport__c(Account1_Name__c='a0', Donation_Donor__c='Account1', Donation_Amount__c=10, Donation_Campaign_Name__c='cmp1'));
-        listDI.add(new DataImport__c(Account1_Name__c='a1', Donation_Donor__c='Account1', Donation_Amount__c=20, Donation_Campaign_Name__c='FailTest1'));
+        listDI.add(new DataImport__c(Account1_Name__c='FailTest1', Donation_Donor__c='Account1', Donation_Amount__c=20, Donation_Campaign_Name__c='cmpNotCreated'));
         listDI.add(new DataImport__c(Account1_Name__c='a2', Donation_Donor__c='Account1', Donation_Amount__c=30, Donation_Campaign_Name__c='cmp1'));
         listDI.add(new DataImport__c(Account1_Name__c='a3', Donation_Donor__c='Account1', Donation_Amount__c=40, Donation_Campaign_Name__c='cmp2'));
         insert listDI;
@@ -1078,7 +1434,7 @@ private with sharing class BDI_DataImport_TEST2 {
         listDI = [select Status__c, FailureInformation__c, DonationImported__c, DonationImportStatus__c, Donation_Campaign_Name__c from DataImport__c];
         system.assertEquals(4, listDI.size());
         for (integer i = 0; i < listDI.size(); i++) {
-            if (listDI[i].Donation_Campaign_Name__c == 'FailTest1') {
+            if (listDI[i].Donation_Campaign_Name__c == 'cmpNotCreated') {
                 system.assertEquals(label.bdiFailed, listDI[i].Status__c);
                 system.assertNotEquals(label.bdiCreated, listDI[i].DonationImportStatus__c);
                 system.assertEquals(null, listDI[i].DonationImported__c);
@@ -1091,11 +1447,11 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import addresses with some data that forces commit errors
-    verify:
-        addresses with errors not created, failures logged in di records
-        addresses without errors are created
+    * @description operation: 
+    *    import addresses with some data that forces commit errors 
+    * verify: 
+    *    addresses with errors not created, failures logged in di records
+    *    addresses without errors are created
     **********************************************************************************************************/            
     static testMethod void ManyDITestAddressDataErrorHandling() {
         if (strTestOnly != '*' && strTestOnly != 'ManyDITestAddressDataErrorHandling') return;
@@ -1133,10 +1489,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import multiple di records with C2 not fully providing match critera, in the same batch
-    verify:
-        duplicate C2's not created
+    * @description operation: 
+    *    import multiple di records with C2 not fully providing match critera, in the same batch 
+    * verify: 
+    *    duplicate C2's not created
     **********************************************************************************************************/            
     static testMethod void TwoDINewC2PartialMatch() {
         if (strTestOnly != '*' && strTestOnly != 'TwoDINewC2PartialMatch') return;
@@ -1172,10 +1528,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import multiple di records with Existing C2 not fully providing match critera, in the same batch
-    verify:
-        duplicate C2's not created
+    * @description operation: 
+    *    import multiple di records with Existing C2 not fully providing match critera, in the same batch 
+    * verify: 
+    *    duplicate C2's not created
     **********************************************************************************************************/            
     static testMethod void TwoDIExistingC2PartialMatch() {
         if (strTestOnly != '*' && strTestOnly != 'TwoDIExistingC2PartialMatch') return;
@@ -1221,11 +1577,11 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import new contacts, but fail field level security 
-    verify:
-        nothing imported
-        records marked with fls error
+    * @description operation: 
+    *    import new contacts, but fail field level security  
+    * verify: 
+    *    nothing imported
+    *    records marked with fls error
     **********************************************************************************************************/            
     static testMethod void testFieldLevelSecurity() {
         if (strTestOnly != '*' && strTestOnly != 'testFieldLevelSecurity') return;
@@ -1262,13 +1618,13 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import contacts with invalid home addresses 
-    verify:
-        address objects created
-        valid contacts' mailing address set
-        valid hh accounts' billing address set
-        error logged on correct data import record
+    * @description operation: 
+    *    import contacts with invalid home addresses  
+    * verify: 
+    *    address objects created
+    *    valid contacts' mailing address set
+    *    valid hh accounts' billing address set
+    *    error logged on correct data import record
     **********************************************************************************************************/            
     static testMethod void testInvalidAddressHandling() {
         if (strTestOnly != '*' && strTestOnly != 'testInvalidAddressHandling') return;
@@ -1333,10 +1689,10 @@ private with sharing class BDI_DataImport_TEST2 {
     }
 
     /*********************************************************************************************************
-    operation:
-        import contacts with the wrong account model 
-    verify:
-        importData fails
+    * @description operation: 
+    *    import contacts with the wrong account model  
+    * verify: 
+    *    importData fails
     **********************************************************************************************************/            
     static testMethod void testInvalidAccountModel() {
         if (strTestOnly != '*' && strTestOnly != 'testInvalidAccountModel') return;

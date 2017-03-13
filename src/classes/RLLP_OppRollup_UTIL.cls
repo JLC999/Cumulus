@@ -30,6 +30,8 @@
 /**
 * @author Salesforce.org 
 * @date 2012 (2.4) 
+* @group Rollups
+* @group-content ../../ApexDocContent/Rollups.htm
 * @description set of utility methods and values used in opportunity rollups
 */
 public without sharing class RLLP_OppRollup_UTIL {
@@ -834,7 +836,7 @@ public without sharing class RLLP_OppRollup_UTIL {
     */
     public static string buildSoftCreditOCRQuery() {
         if (SoftCreditOCRQuery == null) {
-            SoftCreditOCRQuery = 'SELECT Id, ContactId, Opportunity.CloseDate, Opportunity.Amount, OpportunityId ';
+            SoftCreditOCRQuery = 'SELECT Id, ContactId, isPrimary, Opportunity.CloseDate, Opportunity.Amount, OpportunityId ';
             if (isMultiCurrency()) {
                 SoftCreditOCRQuery += ', Opportunity.CurrencyIsoCode ';
             }

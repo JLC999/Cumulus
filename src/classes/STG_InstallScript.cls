@@ -46,17 +46,13 @@ global without sharing class STG_InstallScript implements InstallHandler {
             //First install of Cumulus. NPSP is a requirement to install Cumulus, so we don't need to check if it's installed
             if(context.previousVersion() == null) {
                 runNewOrgScript();
-                UTIL_MasterSchedulableHelper.abortOldScheduledJobs();
-                UTIL_MasterSchedulableHelper.setSchedulableTable();    
             } else if(context.isUpgrade()) {
                 insertTdtmDefaults(null);
-                UTIL_MasterSchedulableHelper.abortOldScheduledJobs();
-                UTIL_MasterSchedulableHelper.setSchedulableTable(); 
             } else if(context.isPush()) {
                 insertTdtmDefaults(null);
-                UTIL_MasterSchedulableHelper.abortOldScheduledJobs();
-                UTIL_MasterSchedulableHelper.setSchedulableTable();
             }
+            UTIL_MasterSchedulableHelper.abortOldScheduledJobs();
+            UTIL_MasterSchedulableHelper.scheduleJobsFromOldObject();
         } catch(Exception e) {
             sendEmailOnInstallError(e, context);
             ERR_Handler.processError(e, ERR_Handler_API.Context.STTG);
@@ -237,7 +233,7 @@ global without sharing class STG_InstallScript implements InstallHandler {
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             mail.setUseSignature(false);
             mail.setReplyTo('donotreply@salesforce.org');
-            mail.setSenderDisplayName('Nonprofit Starter Pack');
+            mail.setSenderDisplayName('Nonprofit Success Pack');
             mail.setSubject('NPSP Install Errors');
             String bodyString = Label.stgInstallScriptError;
             bodyString += '\n\n==========================. \n\n Error message: \n' + e.getMessage() + '\n\n'

@@ -99,6 +99,7 @@ public with sharing class UTIL_Namespace_TEST {
         str = Label.Addr_Verify_Google_Help;
         str = Label.SmartyStreets_Help_Text;
         str = Label.stgHelpCiceroAddrVerification;
+        str = Label.stgHelpRDDisableScheduling;
         str = Label.stgHelpRDFieldMapOppField;
         str = Label.stgHelpRDFieldMapRDField;
         str = Label.CONV_Reload;
@@ -110,6 +111,7 @@ public with sharing class UTIL_Namespace_TEST {
         str = Label.alloUnallocated;
         str = Label.stgHelpBatchCreateDefault;
         str = Label.addrHHAddressAlwaysDefault;
+        str = Label.Addr_Verification_Cant_Load_Class;
 
         // The following labels are referenced because the spider was having
         // issues resolving references to them and they need to be directly
@@ -153,5 +155,9 @@ public with sharing class UTIL_Namespace_TEST {
         str = Label.stgHelpMatchedDonorRole;
         str = Label.stgNavBulkProcesses;
         str = Label.EPAddTask;
+        str = Label.healthDetailsInvalidScheduledJob;
+        str = Label.healthSolutionInvalidScheduledJob;
+        str = Label.healthDetailsScheduleJobs;
+        str = Label.healthSolutionScheduleJobs;
     }
 }

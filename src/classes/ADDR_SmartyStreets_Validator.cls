@@ -30,6 +30,7 @@
 /**
 * @author Salesforce.org
 * @date 2014
+* @group Address Management
 * @description Class that provides address validation/normalization services
 * throught the SmartyStreets API.
  */
@@ -58,7 +59,7 @@ public with sharing class ADDR_SmartyStreets_Validator implements ADDR_IValidato
     * @return String The URL to send requests to for zicode validation.
     */
     public String getDefaultZipcodeURL() {
-        return 'https://api.smartystreets.com/zipcode';  
+        return 'https://us-zipcode.api.smartystreets.com/lookup';  
     }
 
     /*******************************************************************************************************

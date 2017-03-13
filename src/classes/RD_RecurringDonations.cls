@@ -149,14 +149,8 @@ public class RD_RecurringDonations {
     */ 
     @future
     public static void updateRecurringDonationOnOppChangeFuture(set<id> RDids){
-        Savepoint sp = Database.setSavepoint();
-        try {
-            updateRecurringDonationOnOppChange(RDids, null);
-        } catch(Exception e) {
-        	Database.rollback(sp);
-            ERR_Handler.processError(e, ERR_Handler_API.Context.RD);
-        }
-    } 
+        updateRecurringDonationOnOppChange(RDids, null);
+    }
     
     /*******************************************************************************************************
     * @description Updates the specified RD's by querying their Opps so it can update the RD's 
@@ -188,10 +182,10 @@ public class RD_RecurringDonations {
         //update the rc next payment date 
         //and the paid ammounts and paid installments 
         for (sobject obj : [select count(id) oppcount, MIN(CloseDate) MinDate, MAX(CloseDate) MaxDate, SUM(Amount) Total,
-                                  isClosed, npe03__Recurring_Donation__r.id rdid, isWon
+                                  isClosed, npe03__Recurring_Donation__c rdid, isWon
                                   from Opportunity where npe03__Recurring_Donation__r.npe03__Open_Ended_Status__c <> :closedLabel 
-                                  and npe03__Recurring_Donation__r.id IN :rdMap.keySet()
-                                  group by rollup(npe03__Recurring_Donation__r.id, isClosed, isWon)]) {
+                                  and npe03__Recurring_Donation__c IN :rdMap.keySet()
+                                  group by rollup(npe03__Recurring_Donation__c, isClosed, isWon)]) {
             id rdid = (id)obj.get('rdid'); 
             
             boolean isClosed = (boolean)obj.get('isClosed');
@@ -306,16 +300,10 @@ public class RD_RecurringDonations {
     */ 
     @future
     public static void insertOppsOnRecurringDonationInsertFuture(set<id> recids) {
-        Savepoint sp = Database.setSavepoint();
-        try {
-	        delete [select id from Opportunity where isClosed = false and npe03__Recurring_Donation__r.id IN :recids];
-	
-	        list<npe03__Recurring_Donation__c> reclist = requeryListRD(recids);
-	        insertOppsOnRecurringDonationInsert(reclist);
-        } catch(Exception e) {
-        	Database.rollback(sp);
-            ERR_Handler.processError(e, ERR_Handler_API.Context.RD);
-        }
+        delete [select id from Opportunity where isClosed = false and npe03__Recurring_Donation__c IN :recids];
+
+        list<npe03__Recurring_Donation__c> reclist = requeryListRD(recids);
+        insertOppsOnRecurringDonationInsert(reclist);
     }
     
     /*******************************************************************************************************
@@ -638,13 +626,7 @@ public class RD_RecurringDonations {
     */ 
     @future 
     public static void oppContactRolesFuture(set<id> oppIds){
-    	Savepoint sp = Database.setSavepoint();
-    	try {
-    	   oppContactRoles(oppIds);
-    	} catch(Exception e) {
-    	   Database.rollback(sp);
-           ERR_Handler.processError(e, ERR_Handler_API.Context.RD);
-        }
+       oppContactRoles(oppIds);
     }
     
     /*******************************************************************************************************
@@ -706,13 +688,7 @@ public class RD_RecurringDonations {
     */ 
     @future
     public static void updateExistingOppsFuture(set<id>recIDs){
-    	Savepoint sp = Database.setSavepoint();
-    	try {
-    	   updateExistingOpps(recIDs, null);
-    	} catch(Exception e) {
-    	   Database.rollback(sp);
-           ERR_Handler.processError(e, ERR_Handler_API.Context.RD);
-        }
+       updateExistingOpps(recIDs, null);
     }
     
     /*******************************************************************************************************
@@ -733,22 +709,22 @@ public class RD_RecurringDonations {
         List<npe03__Recurring_Donation__c> rdsToUpdate = database.query(rdQuery);       
         map<id, npe03__Recurring_Donation__c> rdMap = new map<id, npe03__Recurring_Donation__c>(rdsToUpdate);  
                            
-        list<Opportunity> oppList = [select id, Amount, Name, CampaignId, AccountID, CloseDate, Recurring_Donation_Installment_Number__c, npe03__Recurring_Donation__r.id                                         
+        list<Opportunity> oppList = [select id, Amount, Name, CampaignId, AccountID, CloseDate, Recurring_Donation_Installment_Number__c, npe03__Recurring_Donation__c                                         
                                        from Opportunity 
-                                       where npe03__Recurring_Donation__r.id IN :rdMap.keySet() 
+                                       where npe03__Recurring_Donation__c IN :rdMap.keySet() 
                                        and isClosed = false
                                        order by CloseDate asc];
 
         //build a map of recurring donation ID and opps 
         map<id, list<Opportunity>> RDOppMap = new map<id, list<Opportunity>>(); 
         for (Opportunity o : opplist){
-            if (RDOppMap.containsKey(o.npe03__Recurring_Donation__r.id)){
-                list<Opportunity> opps = RDOppMap.get(o.npe03__Recurring_Donation__r.id);
+            if (RDOppMap.containsKey(o.npe03__Recurring_Donation__c)){
+                list<Opportunity> opps = RDOppMap.get(o.npe03__Recurring_Donation__c);
                 opps.add(o);
-                RDOppMap.put(o.npe03__Recurring_Donation__r.id, opps);
+                RDOppMap.put(o.npe03__Recurring_Donation__c, opps);
             }
             else{
-                RDOppMap.put(o.npe03__Recurring_Donation__r.id, new list<Opportunity>{o});
+                RDOppMap.put(o.npe03__Recurring_Donation__c, new list<Opportunity>{o});
             }
         }       
         
@@ -909,13 +885,25 @@ public class RD_RecurringDonations {
         // non open-ended rd's are handled strictly by the insert rd code.
         list<npe03__Recurring_Donation__c> listRDNonOpen = new list<npe03__Recurring_Donation__c>();
         list<npe03__Recurring_Donation__c> listRDOpen = new list<npe03__Recurring_Donation__c>();
-        for (npe03__Recurring_Donation__c rd : recurringDonationsToEvaluate) {
+        
+        for (Integer i=0; i<recurringDonationsToEvaluate.size(); i++) {
+            npe03__Recurring_Donation__c rd = recurringDonationsToEvaluate[i];
+            
+            //don't try to evaluate orphaned recurring donations
+            if (rd.npe03__Contact__c == null && rd.npe03__Organization__c == null) {
+                recurringDonationsToEvaluate.remove(i);
+                //decrement counter after removing value to avoid going over the end of the array
+                i--;
+                continue;
+            }
+
             if (rd.npe03__Open_Ended_Status__c != openlabel && rd.npe03__Open_Ended_Status__c != closedlabel) {
                 listRDNonOpen.add(rd);
             } else {
                 listRDOpen.add(rd);
             }
         }
+
         if (listRDNonOpen.size() > 0) {
             //clear existing open opps and recreate
             delete [select id from Opportunity where npe03__Recurring_Donation__c IN :listRDNonOpen and isClosed = false];
@@ -937,10 +925,10 @@ public class RD_RecurringDonations {
                 
         //get the existing donations
         list<sobject> sobjs = [select count(id) oppCount, MAX(CloseDate) MaxDate,
-                                  npe03__Recurring_Donation__r.id rdid
+                                  npe03__Recurring_Donation__c rdid
                                   from Opportunity where npe03__Recurring_Donation__r.npe03__Open_Ended_Status__c <> :closedLabel 
-                                  and npe03__Recurring_Donation__r.id IN :recurringDonationsToEvaluate                                  
-                                  group by rollup(npe03__Recurring_Donation__r.id)]; 
+                                  and npe03__Recurring_Donation__c IN :recurringDonationsToEvaluate                                  
+                                  group by rollup(npe03__Recurring_Donation__c)]; 
         
         map<id, date> lastOppMap = new map<id, date>();
         map<id, integer> oppCountMap = new map<id, integer>();
@@ -1085,27 +1073,6 @@ public class RD_RecurringDonations {
     }
   
     /*******************************************************************************************************
-    * @description Validates that the Recurring Donations can be deleted, and marks the RD record
-    * with an error if there are any Opportunities referring to the RD. 
-    * @param listRD The list of RD's to process
-    * @return void
-    */ 
-    public static void approveDeleteRecDonations(list<npe03__Recurring_Donation__c> listRD) {
-        Map<Id,Id> mapRDIdOppId = new Map<Id,Id>();
-
-        for (Opportunity o : [Select Id, npe03__Recurring_Donation__c from Opportunity where npe03__Recurring_Donation__c in :listRD]) {
-            mapRDIdOppId.put(o.npe03__Recurring_Donation__c,o.Id);
-        }
-        
-        // don't allow deleting any RD which still has Opps pointing to it.
-        for (npe03__Recurring_Donation__c r : listRD) {
-            if (mapRDIdOppId.containsKey(r.Id)) {
-                r.addError(system.label.npe03.RecurringDonationCantDeleteError);
-            }
-        }
-    }
-    
-    /*******************************************************************************************************
     * @description When closing an RD, either deletes or closes all of its currently open Opps. 
     * @param closedRDs The list of RD's to process
     * @param dmlWrapper Object to hold the Opps that need deleting or updating
@@ -1116,8 +1083,8 @@ public class RD_RecurringDonations {
         npe03__Recurring_Donations_Settings__c rds = UTIL_CustomSettingsFacade.getRecurringDonationsSettings();
         //UTIL_Debug.debug('IN THE PRIVATE METHOD');
         if (!closedRDs.isEmpty() && rds.npe03__Open_Opportunity_Behavior__c != RecurringDonationCloseOptions.No_Action.name()) {
-            map<Id, Opportunity> mapIdOpp = new map<Id, Opportunity>([select Id, StageName, npe03__Recurring_Donation__r.id 
-                                    from Opportunity where npe03__Recurring_Donation__r.id IN :closedRDs and isClosed = false]);
+            map<Id, Opportunity> mapIdOpp = new map<Id, Opportunity>([select Id, StageName, npe03__Recurring_Donation__c 
+                                    from Opportunity where npe03__Recurring_Donation__c IN :closedRDs and isClosed = false]);
          
             if (rds.npe03__Open_Opportunity_Behavior__c == RecurringDonationCloseOptions.Delete_Open_Opportunities.name()){
                 //UTIL_Debug.debug('IN THE PRIVATE METHOD3');

@@ -34,26 +34,18 @@
 * @group-content ../../ApexDocContent/Allocations.htm
 * @description Allocations Rollups to General Accounting Units
 */
-public without sharing class ALLO_Rollup_SCHED extends UTIL_AbstractRollup_BATCH implements UTIL_MasterSchedulableHelper.UTIL_IRecurring {
+public without sharing class ALLO_Rollup_SCHED extends UTIL_AbstractRollup_BATCH implements Schedulable {
 
     /*******************************************************************************************************
-    * @description Implementation of UTIL_MasterSchedulableHelper.UTIL_IRecurring, to allow nightly 
-    * scheduling. Attempts to start allocations rollup batch job.
-    * @return Boolean Whether the batch job started successfully. 
+    * @description Schedulable execute method executes this batch job.
     ********************************************************************************************************/
-    public Boolean executeReturnStatus() {
-        if(UTIL_JobScheduler.canRunBatch()) {
-        	Savepoint sp = Database.setSavepoint();
-        	try {
-	            ALLO_Rollup_SCHED rollup = new ALLO_Rollup_SCHED(200);
-	            rollup.runRollups();
-	            return true;
-        	} catch(Exception e) {
-        		Database.rollback(sp);
-        		ERR_Handler.processError(e, ERR_Handler_API.Context.ALLO);
-        	}
+    public void execute(SchedulableContext context) {
+        try {
+            ALLO_Rollup_SCHED rollup = new ALLO_Rollup_SCHED(RLLP_OppRollup_UTIL.BATCH_SIZE);
+            rollup.runRollups();
+        } catch(Exception e) {
+            ERR_Handler.processError(e, ERR_Handler_API.Context.ALLO);
         }
-        return false;
     }
 
     /*******************************************************************************************************
@@ -140,17 +132,19 @@ public without sharing class ALLO_Rollup_SCHED extends UTIL_AbstractRollup_BATCH
             'MAX(Opportunity__r.CloseDate)' => UTIL_Namespace.StrTokenNSPrefix('Last_Allocation_Date__c')
         };
         
+        Integer currentYear = alloSettings.Use_Fiscal_Year_for_Rollups__c ? RLLP_OppRollup_UTIL.getCurrentFY() : System.today().year();
+
         rs.subgroupExpression = strFiscalOrCalendarYear+'(Opportunity__r.CloseDate)';
         rs.subgroupValueToParentFieldnameMap = new map<string, map<object, string>> {
             'SUM(Amount__c)' => new map<object, string> { 
-                System.Today().Year() => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_This_Year__c'), 
-                System.Today().AddYears(-1).Year() => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_Last_Year__c'),
-                System.Today().AddYears(-2).Year() => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_Two_Years_Ago__c')
+                currentYear => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_This_Year__c'), 
+                currentYear-1 => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_Last_Year__c'),
+                currentYear-2 => UTIL_Namespace.StrTokenNSPrefix('Total_Allocations_Two_Years_Ago__c')
             },
             'COUNT_DISTINCT(ID)' => new map<object, string> { 
-                System.Today().Year() => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_This_Year__c'), 
-                System.Today().AddYears(-1).Year() => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_Last_Year__c'),
-                System.Today().AddYears(-2).Year() => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_Two_Years_Ago__c')
+                currentYear => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_This_Year__c'), 
+                currentYear-1 => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_Last_Year__c'),
+                currentYear-2 => UTIL_Namespace.StrTokenNSPrefix('Number_of_Allocations_Two_Years_Ago__c')
             }
         };
 

@@ -65,8 +65,7 @@ private with sharing class EP_EngagementPlans_TEST {
             Reminder_Time__c = '660',
             Send_Email__c = true,
             Days_After__c = 3,
-            Type__c = 'Call',
-            Priority__c = 'Medium'
+            Type__c = 'Call'
         );
         insert epTask;
 
@@ -103,7 +102,7 @@ private with sharing class EP_EngagementPlans_TEST {
         System.assertEquals(System.Today().addDays(3), results[0].ActivityDate, 'Activity Date should be three days from today.');
         System.assert(results[0].IsReminderSet, 'Reminder should be set.');
         System.assertEquals(System.Today().addDays(3), results[0].ReminderDateTime.Date(), 'Reminder should be set three days from today.');
-        System.assertEquals(epTask.Priority__c, results[0].Priority, 'Priority field should be set based on EP Task Priority.');
+        System.assertEquals(UTIL_Describe.getDefaultSelectOption('Task', 'Priority'), results[0].Priority, 'Priority field left blank should be set based on default picklist value.');
         System.assertEquals(otherUserId, results[0].OwnerId, 'Task owner should be based on EP Task Assigned To field.');
 
         System.assertEquals(dependentEpTask.Name, results[1].Subject, 'Subject field should be set based on EP Task Name.');
@@ -307,7 +306,8 @@ private with sharing class EP_EngagementPlans_TEST {
         Test.stopTest();
 
         System.assertNotEquals(null, caughtException, 'An exception should be caught.');
-        System.assert(caughtException.getMessage().contains(Label.engagementPlanNoLookups));
+        System.assert(caughtException.getMessage().contains(Label.engagementPlanNoLookups), 
+            'The exception should have the correct message. Actual message: ' + caughtException.getMessage());
     }
 
     /*********************************************************************************************************
@@ -342,11 +342,51 @@ private with sharing class EP_EngagementPlans_TEST {
     }
 
     /*********************************************************************************************************
+    * @description Updates an engagement plan to change the value of the  lookup, verifies an exception is thrown.
+    */
+    static testMethod void testPlanUpdate() {
+
+        Account acc = new Account(Name='foo');
+        insert acc;
+        Account acc2 = new Account(Name='foo2');
+        insert acc2;
+        Engagement_Plan_Template__c template = new Engagement_Plan_Template__c(Name = 'Template');
+        insert template;
+
+        Engagement_Plan__c plan = new Engagement_Plan__c(
+            Engagement_Plan_Template__c = template.id,
+            Account__c = acc.id
+        );
+        insert plan;
+
+        Exception caughtException;
+        Test.startTest();
+        try {
+            plan.Account__c = acc2.id;
+            update plan;
+        } catch (Exception ex) {
+            caughtException = ex;
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, caughtException, 'An exception should be caught.');
+        System.assert(caughtException.getMessage().contains(Label.engagementPlanCantEdit));
+    }
+    
+    /*********************************************************************************************************
+    * @description tests the helper method that finds a path to ownerId.
+    */
+    static testmethod void test_getsobjectparentpath() {
+        System.assertEquals(new List<String>{'OwnerId'},EP_EngagementPlans_UTIL.getOwnerIdPath(Opportunity.SObjectType));
+        System.assertEquals(new List<String>{UTIL_Namespace.StrTokenNSPrefix('Household_Account__r'),'OwnerId'},EP_EngagementPlans_UTIL.getOwnerIdPath(Address__c.SObjectType));
+    }
+
+    /*********************************************************************************************************
     * @description Returns the user id of an active user other than the current one if one exists, 
     * otherwise returns the current user id.
     */
     private static Id getOtherUserId() {
-        List<User> otherUsers = [SELECT Id FROM User WHERE IsActive = true AND Id != :UserInfo.getUserId()];
+        List<User> otherUsers = [SELECT Id FROM User WHERE IsActive = true AND Id != :UserInfo.getUserId() AND UserType = 'Standard' LIMIT 1];
         if (otherUsers.isEmpty()) {
             return UserInfo.getUserId();
         } else {

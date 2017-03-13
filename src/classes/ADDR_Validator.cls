@@ -30,6 +30,7 @@
 /**
 * @author Salesforce.org
 * @date 2014
+* @group Address Management
 * @description Class that asynchronously starts the address verification calls
 * and processes the results.
 */
@@ -47,11 +48,8 @@ public with sharing class ADDR_Validator {
         if (addrId != null) {
             set<id> setAddrId = new Set<Id>{addrId};
             verifyRecords(setAddrId);
-            
-            PageReference pageRef = new PageReference('/' + addrId);
-            pageRef.setRedirect(true);
-            return pageRef;
-        } else return null;
+        }
+        return null;
     }
 
     /*******************************************************************************************************

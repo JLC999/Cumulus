@@ -30,6 +30,7 @@
 /**
 * @author Salesforce.org
 * @date 2011,2012 
+* @group Relationships
 * @description Testing for the Relationships class
 */
 @isTest
@@ -699,7 +700,7 @@ private class REL_Relationships_TEST {
         Database.SaveResult[] insertResults = Database.insert(relationships, false);
         //assert an error - Required fields are missing: [npe4__Contact__c]
         //npe4__Contact__c is missing from the reciprocal relationship that gets automatically created.
-        system.assertEquals(1, [select count() from Error__c]);
+        system.assertEquals(false, insertResults[0].isSuccess());
         
         //update relationship - this will create the missing npe4__Contact__c field
         relationships[0].npe4__RelatedContact__c = c1.id;
@@ -712,10 +713,6 @@ private class REL_Relationships_TEST {
         ERR_Handler.Errors errors = ERR_Handler.getErrors(updateResults, (List<SObject>)relationships);
         //we still get an error, because of the Related_Contact_Do_Not_Change validation rule on Relationship
         system.assertEquals(true, errors.errorsExist);
-        system.assertEquals(1, errors.errorRecords.size());
-
-        //assert no additional error record was created on update
-        system.assertEquals(1, [select count() from Error__c]);
     }
     
     /*********************************************************************************************************
@@ -860,4 +857,87 @@ private class REL_Relationships_TEST {
             system.assertNotEquals(null, ri);                       
         }
     }   
+
+    /*********************************************************************************************************
+    * @description Test method for deletion bug regression.
+    */
+    public static testMethod void testDeletingMutuallyReferentialRelationshipsDoesNotPreventDeleteOfReciprocals() {
+        UTIL_CustomSettingsFacade.getRelationshipSettings().npe4__Reciprocal_Method__c = 'Value Inversion';
+
+        List<Contact> contacts = new List<Contact>{
+            new Contact(LastName='Smith'),
+            new Contact(LastName='Jones'),
+            new Contact(LastName='Lion'),
+            new Contact(LastName='Lamb')
+        };
+
+        insert contacts;
+
+        npe4__Relationship__c rel1to2 = new npe4__Relationship__c(
+            npe4__Type__c = 'Paparazzo-Celebrity',
+            npe4__Contact__c = contacts.get(0).Id,
+            npe4__RelatedContact__c = contacts.get(1).Id
+        );
+
+        npe4__Relationship__c rel3to4 = new npe4__Relationship__c(
+            npe4__Type__c = 'Predator-Prey',
+            npe4__Contact__c = contacts.get(2).Id,
+            npe4__RelatedContact__c = contacts.get(3).Id
+        );
+
+        insert new List<npe4__Relationship__c>{
+            rel1to2,
+            rel3to4
+        };
+
+        npe4__Relationship__c rel2to1 = [
+            SELECT npe4__Type__c
+            FROM npe4__Relationship__c
+            WHERE npe4__ReciprocalRelationship__c = :rel1to2.Id
+            LIMIT 1
+        ];
+
+        npe4__Relationship__c rel4to3 = [
+            SELECT npe4__Type__c
+            FROM npe4__Relationship__c
+            WHERE npe4__ReciprocalRelationship__c = :rel3to4.Id
+        ];
+
+        npe4__Relationship__c rel1to2Updated = [
+            SELECT npe4__ReciprocalRelationship__c
+            FROM npe4__Relationship__c
+            WHERE Id = :rel1to2.Id
+        ];
+
+        npe4__Relationship__c rel3to4Updated = [
+            SELECT npe4__ReciprocalRelationship__c
+            FROM npe4__Relationship__c
+            WHERE Id = :rel3to4.Id
+        ];
+
+        System.assertEquals(rel2to1.Id, rel1to2Updated.npe4__ReciprocalRelationship__c);
+        System.assertEquals(rel4to3.Id, rel3to4Updated.npe4__ReciprocalRelationship__c);
+
+        Test.startTest();
+
+        delete new List<npe4__Relationship__c>{
+            rel1to2,
+            rel2to1,
+            rel3to4
+        };
+
+        Test.stopTest();
+
+        Integer preyExists = [
+            SELECT COUNT()
+            FROM npe4__Relationship__c
+            WHERE Id = :rel4to3.Id
+        ];
+
+        System.assertEquals(
+            0,
+            preyExists,
+            'Prey relationship should have been deleted because Predator side of relationship was deleted'
+        );
+    }
 }

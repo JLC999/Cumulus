@@ -144,10 +144,11 @@ public class ERR_Notifier {
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setUseSignature(false);
         mail.setReplyTo('donotreply@salesforce.org');
-        mail.setSenderDisplayName('Nonprofit Starter Pack');
-        mail.setSubject('NPSP Error');
+        mail.setSenderDisplayName('Nonprofit Success Pack');
+        mail.setSubject('Salesforce Error');
         string bodyString = 'Organization: ' + UserInfo.getOrganizationName() + '(' + UserInfo.getOrganizationId() + ')\n';
-        bodyString += 'User: ' + UserInfo.getUserName() + '(' + UserInfo.getUserId() + ')';
+        bodyString += 'User: ' + UserInfo.getUserName() + '(' + UserInfo.getUserId() + ')\n\n';
+        bodyString += Label.ErrorEmailMessage + '\n';
         if (context == ERR_Handler_API.Context.RD.name())
             bodyString += system.label.npe03.RecurringDonationErrorEmailBody;
         bodyString += '\n\nErrors:';
@@ -177,7 +178,7 @@ public class ERR_Notifier {
                 List<SObject> postsToInsert = new List<SObject>();
                 for(Error__c error : errors) {
                     SObject post = (SObject)System.Type.forName('FeedItem').newInstance();
-                    post.put('Title', 'NPSP Error');
+                    post.put('Title', 'Salesforce Error');
                     String body = getErrorMessageBody(error);
                     post.put('Body', body);
                     post.put('ParentId', collaborationGroup.Id);

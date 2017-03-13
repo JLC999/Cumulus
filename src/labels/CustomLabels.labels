@@ -179,6 +179,14 @@
         <value>Mass Verify Existing Addresses</value>
     </labels>
     <labels>
+        <fullName>Addr_Verification_Cant_Load_Class</fullName>
+        <categories>address</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Unable to load verification class when visiting settings page</shortDescription>
+        <value>There was an error loading the validator class {0}</value>
+    </labels>
+    <labels>
         <fullName>Addr_Verification_Required</fullName>
         <categories>address</categories>
         <language>en_US</language>
@@ -580,6 +588,30 @@
         <value>omit</value>
     </labels>
     <labels>
+        <fullName>CascadeDeletionError</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>CascadeDeletionError</shortDescription>
+        <value>Your attempt to delete {0} could not be completed because it is associated with the following records. Delete or re-associate these records and then try deleting {0} again.</value>
+    </labels>
+    <labels>
+        <fullName>ClosedWonOpportunities</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ClosedWonOpportunities</shortDescription>
+        <value>Closed Won Opportunities</value>
+    </labels>
+    <labels>
+        <fullName>ConfirmDeleteAccount</fullName>
+        <categories>Error, Delete</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ConfirmDeleteAccount</shortDescription>
+        <value>{0} is the only contact in the {1} account. Deleting this contact would leave an empty account. Would you like to delete {1} instead?</value>
+    </labels>
+    <labels>
         <fullName>EPAddDependentTask</fullName>
         <categories>Engagement Plans</categories>
         <language>en_US</language>
@@ -604,6 +636,22 @@
         <value>Delete Task</value>
     </labels>
     <labels>
+        <fullName>EPManageTasks</fullName>
+        <categories>Engagement Plans</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>EPManageTasks</shortDescription>
+        <value>Manage Engagement Plan Tasks</value>
+    </labels>
+    <labels>
+        <fullName>EPManageTemplate</fullName>
+        <categories>Engagement Plans</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>EPManageTemplate</shortDescription>
+        <value>Manage Engagement Plan Template</value>
+    </labels>
+    <labels>
         <fullName>EPTaskDependency</fullName>
         <categories>Engagement Plan, Error</categories>
         <language>en_US</language>
@@ -620,12 +668,48 @@
         <value>Engagement Plan Tasks can only be dependent on other Engagement Plan Tasks that belong to the same Engagement Plan Template.</value>
     </labels>
     <labels>
+        <fullName>EPTo</fullName>
+        <categories>Engagement Plans</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>to, as in &quot;Add depend task to task 1&quot;</shortDescription>
+        <value>to</value>
+    </labels>
+    <labels>
+        <fullName>ErrorEmailMessage</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>ErrorEmailMessage</shortDescription>
+        <value>Salesforce reported the below errors as NPSP was attempting to execute its batch jobs, or at a time when it was unable to display error messages directly to a user. It’s likely that NPSP was attempting to update summary fields on Accounts and Contacts, but was unable to save certain records. This failure might have been caused by a variety of issues unrelated to NPSP, such as custom code or validation rules.
+
+Read this article on the Power of Us Hub to learn how these Scheduled Jobs work: https://powerofus.force.com/NPSP_Scheduled_Jobs
+
+If you’re not sure how to resolve these errors, post a message in the Nonprofit Success Pack group in the Power of Us Hub: https://powerofus.force.com/HUB_NPSP_Group</value>
+    </labels>
+    <labels>
         <fullName>HiddenForSecurity</fullName>
         <categories>settings</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>HiddenForSecurity</shortDescription>
         <value>Hidden for security</value>
+    </labels>
+    <labels>
+        <fullName>NameRequired</fullName>
+        <categories>Engagement Plans, Errors</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>NameRequired</shortDescription>
+        <value>Subject is a required field.</value>
+    </labels>
+    <labels>
+        <fullName>OrganizationalOpportunities</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>OrganizationalOpportunities</shortDescription>
+        <value>Organizational Opportunities</value>
     </labels>
     <labels>
         <fullName>PageMessagesConfirm</fullName>
@@ -1095,6 +1179,14 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>First Name, Last Name, and Email</value>
     </labels>
     <labels>
+        <fullName>bdiContactMatchFnameLnamePhone</fullName>
+        <categories>Data Importer</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Data Importer Contact matching option for Fname, Lname, Phone</shortDescription>
+        <value>First Name, Last Name, and Phone</value>
+    </labels>
+    <labels>
         <fullName>bdiContactMatchLnameEmail</fullName>
         <categories>Data Importer</categories>
         <language>en_US</language>
@@ -1124,7 +1216,7 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>bdiDataImporterDescription</shortDescription>
-        <value>The NPSP Data Importer helps you easily import your data into the Nonprofit Starter Pack</value>
+        <value>The NPSP Data Importer helps you easily import your data into the Nonprofit Success Pack</value>
     </labels>
     <labels>
         <fullName>bdiDataImporterInfoLine1</fullName>
@@ -1375,12 +1467,28 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>campaignMemberStatusResponded</value>
     </labels>
     <labels>
+        <fullName>conFailedAccountCreate</fullName>
+        <categories>Data Import, Contacts</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Used when NPSP hits an error trying to create an account for a contact</shortDescription>
+        <value>Failed to create Account for Contact {0} {1}. {2}</value>
+    </labels>
+    <labels>
         <fullName>conMergeErrNoPersonAccounts</fullName>
         <categories>Contact Merge</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>conMergeErrNoPersonAccounts</shortDescription>
         <value>Person accounts are not supported.</value>
+    </labels>
+    <labels>
+        <fullName>engagementPlanCantEdit</fullName>
+        <categories>Engagement Plans</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>engagementPlanCantEdit</shortDescription>
+        <value>You can&apos;t assign this Engagement Plan to a new object. Please create a new Engagement Plan.</value>
     </labels>
     <labels>
         <fullName>engagementPlanNoLookups</fullName>
@@ -1397,6 +1505,22 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <protected>false</protected>
         <shortDescription>engagementPlanTwoLookups</shortDescription>
         <value>Only one object lookup can be populated per Engagement Plan.</value>
+    </labels>
+    <labels>
+        <fullName>exceptionRequiredField</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>exceptionRequiredField</shortDescription>
+        <value>Required fields are missing:</value>
+    </labels>
+    <labels>
+        <fullName>exceptionValidationRule</fullName>
+        <categories>Error</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>exceptionValidationRule</shortDescription>
+        <value>A validation rule is preventing the record from saving:</value>
     </labels>
     <labels>
         <fullName>flsError</fullName>
@@ -1707,7 +1831,15 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>healthDetailsNothingScheduled</shortDescription>
-        <value>The NPSP Global Scheduled class is not scheduled.</value>
+        <value>The NPSP default scheduled classes are not scheduled.</value>
+    </labels>
+    <labels>
+        <fullName>healthDetailsOCR</fullName>
+        <categories>Health Check</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>healthDetailsOCR</shortDescription>
+        <value>{0} and {1} cannot use the same role value.</value>
     </labels>
     <labels>
         <fullName>healthDetailsOCRDupPrimary</fullName>
@@ -1724,6 +1856,22 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <protected>false</protected>
         <shortDescription>healthDetailsOCRDupPrimaryValid</shortDescription>
         <value>No Opportunities were found with multiple Primary Opportunity Contact Roles.</value>
+    </labels>
+    <labels>
+        <fullName>healthDetailsOCRSettingsResolution</fullName>
+        <categories>Health Check</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>healthDetailsOCRSettingsResolution</shortDescription>
+        <value>On the NPSP Settings tab, click Donations | Contact Roles, and edit the above settings values.</value>
+    </labels>
+    <labels>
+        <fullName>healthDetailsOCRSettingsValid</fullName>
+        <categories>Health Check</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>healthDetailsOCRSettingsValid</shortDescription>
+        <value>NPSP Opportunity Contact Roles settings are valid.</value>
     </labels>
     <labels>
         <fullName>healthDetailsPaymentMappingBadDataTypes</fullName>
@@ -1966,6 +2114,14 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>Opportunity Contact Roles</value>
     </labels>
     <labels>
+        <fullName>healthLabelOCRSettings</fullName>
+        <categories>Health Check</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>healthLabelOCRSettings</shortDescription>
+        <value>Opportunity Contact Roles Settings</value>
+    </labels>
+    <labels>
         <fullName>healthLabelOppPayments</fullName>
         <categories>Health Check</categories>
         <language>en_US</language>
@@ -2019,7 +2175,7 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>healthLabelScheduler</shortDescription>
-        <value>NPSP Global Scheduler</value>
+        <value>NPSP Default Scheduler</value>
     </labels>
     <labels>
         <fullName>healthLabelSchedulerValid</fullName>
@@ -2027,7 +2183,7 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>healthLabelSchedulerValid</shortDescription>
-        <value>NPSP Global Scheduler job scheduled.</value>
+        <value>NPSP recurring jobs are scheduled.</value>
     </labels>
     <labels>
         <fullName>healthLabelShowPassedTests</fullName>
@@ -2316,7 +2472,7 @@ If you want to know which Opportunities would have previously included this doub
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>healthSolutionNothingScheduled</shortDescription>
-        <value>You must schedule the class UTIL_MasterSchedulable to run daily with the job name {0}.</value>
+        <value>You must schedule the NPSP default scheduled classes to run.</value>
     </labels>
     <labels>
         <fullName>healthSolutionOCRDupPrimary</fullName>
@@ -2454,6 +2610,13 @@ If you want to know which Opportunities would have previously included this doub
         <value>- Household Duplicate</value>
     </labels>
     <labels>
+        <fullName>isARequiredField</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>isARequiredField</shortDescription>
+        <value>is a required field.</value>
+    </labels>
+    <labels>
         <fullName>labelListViewFirst</fullName>
         <categories>SoqlListView</categories>
         <language>en_US</language>
@@ -2548,6 +2711,13 @@ If you want to know which Opportunities would have previously included this doub
         <protected>false</protected>
         <shortDescription>lblCity</shortDescription>
         <value>City</value>
+    </labels>
+    <labels>
+        <fullName>lblCloned</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>lblCloned</shortDescription>
+        <value>Cloned</value>
     </labels>
     <labels>
         <fullName>lblCountry</fullName>
@@ -2678,6 +2848,14 @@ If you want to know which Opportunities would have previously included this doub
         <value>Postal Code</value>
     </labels>
     <labels>
+        <fullName>lblRequired</fullName>
+        <categories>Engagement Plan, UTIL_FormField</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>lblRequired</shortDescription>
+        <value>Required</value>
+    </labels>
+    <labels>
         <fullName>lblSalutation</fullName>
         <categories>Manage Household UI</categories>
         <language>en_US</language>
@@ -2798,6 +2976,14 @@ If you want to know which Opportunities would have previously included this doub
         <value>Contact Account</value>
     </labels>
     <labels>
+        <fullName>leadConvertContactSelection</fullName>
+        <categories>Lead Converter</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>leadConvertContactSelection</shortDescription>
+        <value>You must select an option in the Contact box.</value>
+    </labels>
+    <labels>
         <fullName>leadConvertCreateAccount</fullName>
         <categories>Lead Converter</categories>
         <language>en_US</language>
@@ -2844,6 +3030,14 @@ If you want to know which Opportunities would have previously included this doub
         <protected>false</protected>
         <shortDescription>leadConvertPageTitle</shortDescription>
         <value>Convert Lead:</value>
+    </labels>
+    <labels>
+        <fullName>leadConvertRecordTypeWarning</fullName>
+        <categories>Lead Converter</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>leadConvertRecordTypeWarning</shortDescription>
+        <value>The default Account Record Type for your Profile is the same Record Type set as the Account Model in NPSP Settings, which could cause various data issues. We recommend changing the Account Record Type default to a different value for all profile(s).</value>
     </labels>
     <labels>
         <fullName>leadConvertSectionTitle</fullName>
@@ -2932,6 +3126,14 @@ If you want to know which Opportunities would have previously included this doub
         <protected>true</protected>
         <shortDescription>error when we detect the minimum amount overlaps another level</shortDescription>
         <value>The Minimum Amount to Maximum Amount range on Level {0} overlaps with the Minimum Amount to Maximum Amount range on Level {1}</value>
+    </labels>
+    <labels>
+        <fullName>lvlErrorNoMinMax</fullName>
+        <categories>Levels</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>error if both min and max are empty on a level</shortDescription>
+        <value>The {0} level must have either a Minimum Amount or a Maximum Amount.</value>
     </labels>
     <labels>
         <fullName>mtchBtnSearch</fullName>
@@ -3236,6 +3438,14 @@ If you want to know which Opportunities would have previously included this doub
         <protected>false</protected>
         <shortDescription>pmtWizardWriteoffMessage</shortDescription>
         <value>You are preparing to write off {0} Payment(s) totaling {1}.</value>
+    </labels>
+    <labels>
+        <fullName>pscDeleteRow</fullName>
+        <categories>Manage Soft Credits</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>pscDeleteRow</shortDescription>
+        <value>Delete Row</value>
     </labels>
     <labels>
         <fullName>pscManageSoftCreditsAdd</fullName>
@@ -3702,6 +3912,23 @@ If you want to know which Opportunities would have previously included this doub
         <value>Documentation</value>
     </labels>
     <labels>
+        <fullName>stgDontAutoScheduleHelpText</fullName>
+        <categories>Settings</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>stgDontAutoScheduleHelpText</shortDescription>
+        <value>When checked, NPSP won&apos;t automatically schedule default recurring jobs. 
+&lt;br/&gt; 
+&lt;br/&gt; 
+These recurring jobs calculate rollups, update recurring donations and seasonal address, and perform error handling. 
+&lt;br/&gt; 
+&lt;br/&gt; 
+When unchecked, every time you visit the NPSP Settings page, NPSP verifies that the default recurring jobs are scheduled. Rescheduling only applies to missing jobs, not updated jobs. 
+&lt;br/&gt; 
+&lt;br/&gt; 
+To view these jobs, search for Scheduled Jobs in Salesforce Setup.</value>
+    </labels>
+    <labels>
         <fullName>stgErrorINaming</fullName>
         <categories>Settings</categories>
         <language>en_US</language>
@@ -3739,7 +3966,7 @@ If you want to know which Opportunities would have previously included this doub
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpAccountModel</shortDescription>
-        <value>The Account model used by the Nonprofit Starter Pack. This option controls what happens when you create a Contact with a blank Account field value.</value>
+        <value>The Account model used by the Nonprofit Success Pack. This option controls what happens when you create a Contact with a blank Account field value. WARNING: The Record Type selected for the Account Model should not be used as the default Account Record Type for any Profile in your org. Using the same record type could cause various data issues.</value>
     </labels>
     <labels>
         <fullName>stgHelpAlloFiscalYearRollups</fullName>
@@ -3747,7 +3974,7 @@ If you want to know which Opportunities would have previously included this doub
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpAlloFiscalYearRollups</shortDescription>
-        <value>When checked, this option enables fiscal year settings, rather than calendar year settings, for allocation rollup totals. To set fiscal year information, go to Setup | Company Profile | Fiscal Year. NOTE: The Nonprofit Starter Pack does not support custom fiscal year settings.</value>
+        <value>When checked, this option enables fiscal year settings, rather than calendar year settings, for allocation rollup totals. To set fiscal year information, go to Setup | Company Profile | Fiscal Year. NOTE: The Nonprofit Success Pack does not support custom fiscal year settings.</value>
     </labels>
     <labels>
         <fullName>stgHelpAlloNDayValue</fullName>
@@ -3988,6 +4215,14 @@ Once the process is 100% complete, you can safely leave or refresh this page.</v
         <value>Select the type of user to send notifications to.</value>
     </labels>
     <labels>
+        <fullName>stgHelpExampleHHNames</fullName>
+        <categories>NPSP Settings</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>displayed in the Example household names box</shortDescription>
+        <value>&lt;b&gt;NOTE:&lt;/b&gt; The above preview examples cannot preview information for fields other than First Name, Last Name, or Salutation. (For example, if you&apos;ve created a custom field for nickname that you want to use in the Informal Greeting, that custom field would not show up here.) Fields other than First Name, Last Name, and Salutation don&apos;t show up in the greetings fields of the Manage Household page either, but when you save Contact information from the Manage Household page, your Household naming conventions will appear correctly.</value>
+    </labels>
+    <labels>
         <fullName>stgHelpFGFormat</fullName>
         <categories>Settings</categories>
         <language>en_US</language>
@@ -4001,7 +4236,7 @@ Once the process is 100% complete, you can safely leave or refresh this page.</v
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpFiscalYearRollups</shortDescription>
-        <value>When checked, this option enables fiscal year settings, rather than calendar year settings, for Opportunity rollup totals. To set fiscal year information, go to Setup | Company Profile | Fiscal Year. NOTE: The Nonprofit Starter Pack does not support custom fiscal year settings.</value>
+        <value>When checked, this option enables fiscal year settings, rather than calendar year settings, for Opportunity rollup totals. To set fiscal year information, go to Setup | Company Profile | Fiscal Year. NOTE: The Nonprofit Success Pack does not support custom fiscal year settings.</value>
     </labels>
     <labels>
         <fullName>stgHelpHHAccountRTID</fullName>
@@ -4148,7 +4383,7 @@ Once the process is 100% complete, you can safely leave or refresh this page.</v
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpNPSPDoc</shortDescription>
-        <value>NPSP 3.0 Documentation</value>
+        <value>NPSP Documentation</value>
     </labels>
     <labels>
         <fullName>stgHelpNPSPSettings</fullName>
@@ -4156,7 +4391,7 @@ Once the process is 100% complete, you can safely leave or refresh this page.</v
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpNPSPSettings</shortDescription>
-        <value>Configure the Nonprofit Starter Pack to meet your organization&apos;s needs. You can also monitor the health of your Salesforce organization, or run batch processes to update data.</value>
+        <value>Configure the Nonprofit Success Pack to meet your organization&apos;s needs. You can also monitor the health of your Salesforce organization, or run batch processes to update data.</value>
     </labels>
     <labels>
         <fullName>stgHelpNameConnector</fullName>
@@ -4342,7 +4577,7 @@ IMPORTANT: Both of these fields must have the same data type.</value>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpPowerOfUsHub</shortDescription>
-        <value>Got questions? The Hub has answers! Try the &lt;a href=&quot;https://powerofus.force.com/HUB_NPSP_Group&quot; target=&quot;_blank&quot;&gt;Nonprofit Starter Pack&lt;/a&gt; group for questions about NPSP and the &lt;a href=&quot;https://powerofus.force.com/HUB_System_Admin_Group&quot; target=&quot;_blank&quot;&gt;System Administrators&lt;/a&gt; group for questions about Salesforce administration and cofiguration.&lt;br/&gt;&lt;br/&gt;Keep up with the latest NPSP release notes in the &lt;a href=&quot;https://powerofus.force.com/HUB_NPSP_Release_Group&quot; target=&quot;_blank&quot;&gt;NPSP Release Announcements&lt;/a&gt; group.</value>
+        <value>Got questions? The Hub has answers! Try the &lt;a href=&quot;https://powerofus.force.com/HUB_NPSP_Group&quot; target=&quot;_blank&quot;&gt;Nonprofit Success Pack&lt;/a&gt; group for questions about NPSP and the &lt;a href=&quot;https://powerofus.force.com/HUB_System_Admin_Group&quot; target=&quot;_blank&quot;&gt;System Administrators&lt;/a&gt; group for questions about Salesforce administration and cofiguration.&lt;br/&gt;&lt;br/&gt;Keep up with the latest NPSP release notes in the &lt;a href=&quot;https://powerofus.force.com/HUB_NPSP_Release_Group&quot; target=&quot;_blank&quot;&gt;NPSP Release Announcements&lt;/a&gt; group.</value>
     </labels>
     <labels>
         <fullName>stgHelpPrimaryContactBatch</fullName>
@@ -4735,7 +4970,7 @@ This process may take some time, but you can close this page and the process wil
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgHelpTriggerHandlers</shortDescription>
-        <value>These triggers control core functionality in the Nonprofit Starter Pack, so please exercise extreme caution when creating or modifying them.</value>
+        <value>These triggers control core functionality in the Nonprofit Success Pack, so please exercise extreme caution when creating or modifying them.</value>
     </labels>
     <labels>
         <fullName>stgHelpTriggerHandlersAsync</fullName>
@@ -4776,7 +5011,7 @@ This process may take some time, but you can close this page and the process wil
         <shortDescription>stgInstallScriptError</shortDescription>
         <value>Your installation was successful, but we detected a slight problem. To fix the problem, simply load the NPSP Settings page in Salesforce.
 
-Note: The NPSP Settings tab is visible in the Nonprofit Starter Pack application. If you don&apos;t see the tab, select Nonprofit Starter Pack from the app menu in the upper-right corner.</value>
+Note: The NPSP Settings tab is visible in the Nonprofit Success Pack application. If you don&apos;t see the tab, select Nonprofit Success Pack from the app menu in the upper-right corner.</value>
     </labels>
     <labels>
         <fullName>stgLabelActionColumn</fullName>
@@ -5352,7 +5587,7 @@ Note: The NPSP Settings tab is visible in the Nonprofit Starter Pack application
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgNPSPSettings</shortDescription>
-        <value>Nonprofit Starter Pack Application Settings</value>
+        <value>Nonprofit Success Pack Application Settings</value>
     </labels>
     <labels>
         <fullName>stgNPSPSettingsTitle</fullName>
@@ -5360,7 +5595,7 @@ Note: The NPSP Settings tab is visible in the Nonprofit Starter Pack application
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgNPSPSettingsTitle</shortDescription>
-        <value>Nonprofit Starter Pack Settings</value>
+        <value>Nonprofit Success Pack Settings</value>
     </labels>
     <labels>
         <fullName>stgNPSPWorkbook</fullName>
@@ -5368,7 +5603,7 @@ Note: The NPSP Settings tab is visible in the Nonprofit Starter Pack application
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>stgNPSPWorkbook</shortDescription>
-        <value>Nonprofit Starter Pack Workbook</value>
+        <value>NPSP Fundraising Trail</value>
     </labels>
     <labels>
         <fullName>stgNavAccountModel</fullName>
@@ -5601,6 +5836,14 @@ Note: The NPSP Settings tab is visible in the Nonprofit Starter Pack application
         <protected>false</protected>
         <shortDescription>stgNavRollupBatch</shortDescription>
         <value>Rollup Donations Batch</value>
+    </labels>
+    <labels>
+        <fullName>stgNavSchedule</fullName>
+        <categories>Settings</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>stgNavSchedule</shortDescription>
+        <value>Process Scheduler</value>
     </labels>
     <labels>
         <fullName>stgNavSystem</fullName>

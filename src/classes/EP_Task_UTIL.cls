@@ -33,9 +33,11 @@
 * @group Engagement Plans
 * @group-content ../../ApexDocContent/EngagementPlans.htm
 * @description EP Task and Task utilities for Engagement Plans. Constructor creates maps of EP Tasks and EP Templates.
-* Methods to create and update tasks, calculate 
+* Methods to create and update tasks, calculate dates and reminders, and to assign Task ownership.
+*
+* This class is not marked with sharing as it needs access to dependent Tasks that are potentially owned by other users.
 */
-public with sharing class EP_Task_UTIL {
+public class EP_Task_UTIL {
 
     /** @description Default status for active tasks. */
     public static String defaultTaskStatus {
@@ -119,21 +121,26 @@ public with sharing class EP_Task_UTIL {
     ********************************************************************************************************/
     public void initializeMaps(Set<Id> templateIds) {
 
+        //query our custom fields and fieldset fields for when this template is accessed from the UI
+        Set<String> templateFields = new Set<String>{'Id', 'Name', 'Skip_Weekends__c', 'Reschedule_To__c', 'Automatically_Update_Child_Task_Due_Date__c', 'Default_Assignee__c', 'Description__c'};
+        templateFields.addAll(UTIL_Describe.listStrFromFieldSet(UTIL_Namespace.StrTokenNSPrefix('Engagement_Plan_Template__c'), UTIL_Namespace.StrTokenNSPrefix('ManageEPTemplateFS')));
+
+        String templateQuery = 'SELECT ';
+        templateQuery += String.join(new List<String>(templateFields), ', ');
+        templateQuery += ', (SELECT Id, Name, Engagement_Plan_Template__c, Assigned_To__c, Comments__c, Days_After__c, Type__c, ';
+        templateQuery += 'Parent_Task__c, Priority__c, Reminder__c, Reminder_Time__c, Send_Email__c, Status__c ';
+        templateQuery += 'FROM Engagement_Plan_Tasks__r) ';
+        templateQuery += 'FROM Engagement_Plan_Template__c WHERE Id IN :templateIds';
+
         //query for templates and their child tasks
-        templateMap = new Map<Id, Engagement_Plan_Template__c>(
-            [SELECT Id, Name, Skip_Weekends__c, Reschedule_To__c, Automatically_Update_Child_Task_Due_Date__c, Default_Assignee__c, Description__c,
-                (SELECT Id, Name, Engagement_Plan_Template__c, Assigned_To__c, Comments__c, Days_After__c, Type__c, 
-                Parent_Task__c, Priority__c, Reminder__c, Reminder_Time__c, Send_Email__c, Status__c 
-                FROM Engagement_Plan_Tasks__r)
-            FROM Engagement_Plan_Template__c WHERE Id IN :templateIds]
-        );
+        templateMap = new Map<Id, Engagement_Plan_Template__c>((List<Engagement_Plan_Template__c>)Database.query(templateQuery));
 
         //query for tasks and their child tasks
         epTaskMap = new Map<Id, Engagement_Plan_Task__c>(
             [SELECT Id, Name, Engagement_Plan_Template__c, Assigned_To__c, Comments__c, Days_After__c, Type__c, 
             Parent_Task__c, Priority__c, Reminder__c, Reminder_Time__c, Send_Email__c, Status__c,
                 (SELECT Id FROM Engagement_Plan_Tasks__r)
-            FROM Engagement_Plan_Task__c WHERE Engagement_Plan_Template__c IN :templateIds]
+            FROM Engagement_Plan_Task__c WHERE Engagement_Plan_Template__c IN :templateIds ORDER BY Days_After__c ASC NULLS FIRST]
         );        
     }
 
@@ -171,6 +178,11 @@ public with sharing class EP_Task_UTIL {
         epTask.Days_After__c = getParentDelayRecursive(epTask);
 
         taskResult.ActivityDate = calcActivityDate(epTask, System.today());
+
+        //default the Priority field if none is set
+        if (String.isBlank(taskResult.Priority)) {
+            taskResult.Priority = UTIL_Describe.getDefaultSelectOption('Task','Priority');
+        }
 
         //Non Dependent Task defaults
         if (epTask.Parent_Task__c == null) {

@@ -146,4 +146,28 @@ public with sharing class STG_PanelHealthCheck_TEST {
         system.assertEquals(2, hc.listDR.size());
         system.assertEquals(STG_PanelHealthCheck_CTRL.statusError, hc.listDR[0].strStatus);
     }
+
+    /*******************************************************************************************************
+    * @description verify that the health check test for verifying OCR settings fails when we have bad values
+    */ 
+    static testmethod void verifyOCRSettingsCheck() {
+
+        //adding this to verify regression where one role value was contained within another; this should not cause a second health check error
+        STG_Panel.stgService.stgHH.npo02__Soft_Credit_Roles__c = 'Matched Donor;foo';
+
+        STG_Panel.stgService.stgCon.npe01__Opportunity_Contact_Role_Default_role__c = 'Donor';
+        STG_Panel.stgService.stgCon.Honoree_Opportunity_Contact_Role__c = 'Donor';
+
+        STG_PanelHealthCheck_CTRL hc = new STG_PanelHealthCheck_CTRL();
+        system.assertEquals(0, hc.listDR.size());
+        
+        Test.startTest();
+        hc.verifyOppContactRolesSettings();
+        Test.stopTest();
+        
+        system.assertEquals(1, hc.listDR.size());
+        //count number of line breaks to ensure only one health check failed
+        system.assertEquals(1,  hc.listDR[0].strDetails.countMatches('<br/>'));
+        system.assertEquals(STG_PanelHealthCheck_CTRL.statusError, hc.listDR[0].strStatus);
+    }
 }

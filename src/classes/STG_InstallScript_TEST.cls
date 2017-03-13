@@ -141,7 +141,12 @@ public with sharing class STG_InstallScript_TEST {
             System.assertEquals(afterScriptConfig[i].Object__c, defaultConfig[i].Object__c);
             System.assertEquals(afterScriptConfig[i].Active__c, defaultConfig[i].Active__c);
             System.assertEquals(afterScriptConfig[i].Asynchronous__c, defaultConfig[i].Asynchronous__c);
-            System.assertEquals(afterScriptConfig[i].Trigger_Action__c, defaultConfig[i].Trigger_Action__c);
+            //split and sort trigger actions so the test doesn't fail for different orders
+            List<String> afterTriggerAction = afterScriptConfig[i].Trigger_Action__c.split(';');
+            List<String> defaultTriggerAction = defaultConfig[i].Trigger_Action__c.split(';');
+            afterTriggerAction.sort();
+            defaultTriggerAction.sort();
+            System.assertEquals(afterTriggerAction, defaultTriggerAction);
         }
     }
     
@@ -330,9 +335,6 @@ public with sharing class STG_InstallScript_TEST {
         System.assertEquals('HH_NameSpec',householdNamingSettings.Implementing_Class__c);
         System.assertEquals(365,allocationsSettings.Rollup_N_Day_Value__c);
         System.assertEquals(50,dataImportSettings.Batch_Size__c);
-        
-        List<Schedulable__c> scheduledJobs = [select Class_Name__c from Schedulable__c];
-        System.assertEquals(UTIL_MasterSchedulableHelper.scheduledClasses.size(), scheduledJobs.size());
     }
 
     public static void deleteAllCustomSettings() {

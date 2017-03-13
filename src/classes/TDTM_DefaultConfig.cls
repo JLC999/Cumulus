@@ -127,7 +127,7 @@ public without sharing class TDTM_DefaultConfig {
         // Affiliations on Affiliation
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
               Class__c = 'AFFL_Affiliations_TDTM', Load_Order__c = 1, Object__c = 'npe5__Affiliation__c',
-              Trigger_Action__c = 'AfterInsert;AfterUpdate'));
+              Trigger_Action__c = 'AfterInsert;AfterUpdate;AfterDelete;AfterUndelete'));
 
         // Relationships on CampaignMember
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
@@ -182,7 +182,7 @@ public without sharing class TDTM_DefaultConfig {
         // RecurringDonations on RecurringDonations
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
               Class__c = 'RD_RecurringDonations_TDTM', Load_Order__c = 1, Object__c = 'npe03__Recurring_Donation__c',
-              Trigger_Action__c = 'BeforeInsert;BeforeUpdate;BeforeDelete;AfterInsert;AfterUpdate'));
+              Trigger_Action__c = 'BeforeInsert;BeforeUpdate;AfterInsert;AfterUpdate'));
 
         // OppRollups on Opportunity
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
@@ -271,7 +271,7 @@ public without sharing class TDTM_DefaultConfig {
         // Engagement Plans
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
               Class__c = 'EP_EngagementPlans_TDTM', Load_Order__c = 0, Object__c = 'Engagement_Plan__c',
-              Trigger_Action__c = 'AfterInsert'));
+              Trigger_Action__c = 'BeforeInsert;BeforeUpdate;AfterInsert'));
 
         // Engagement Plan Tasks
         handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
@@ -292,6 +292,27 @@ public without sharing class TDTM_DefaultConfig {
               Class__c = 'LVL_Level_TDTM', Load_Order__c = 1, Object__c = 'Level__c',
               Trigger_Action__c = 'BeforeInsert;BeforeUpdate'));
 
+        // cascade delete via lookup fields
+        handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
+              Class__c = 'CON_CascadeDeleteLookups_TDTM', Load_Order__c = 1, Object__c = 'Contact',
+              Trigger_Action__c = 'BeforeDelete;AfterDelete;AfterUndelete'));
+
+        handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
+              Class__c = 'ACCT_CascadeDeleteLookups_TDTM', Load_Order__c = 1, Object__c = 'Account',
+              Trigger_Action__c = 'BeforeDelete;AfterDelete;AfterUndelete'));
+
+        handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
+              Class__c = 'CAM_CascadeDeleteLookups_TDTM', Load_Order__c = 1, Object__c = 'Campaign',
+              Trigger_Action__c = 'BeforeDelete;AfterDelete;AfterUndelete'));
+
+        handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
+              Class__c = 'OPP_CascadeDeleteLookups_TDTM', Load_Order__c = 1, Object__c = 'Opportunity',
+              Trigger_Action__c = 'BeforeDelete;AfterDelete;AfterUndelete'));
+
+        handlers.add(new Trigger_Handler__c(Active__c = true, Asynchronous__c = false,
+              Class__c = 'RD_CascadeDeleteLookups_TDTM', Load_Order__c = 1, Object__c = 'npe03__Recurring_Donation__c',
+              Trigger_Action__c = 'BeforeDelete;AfterDelete;AfterUndelete'));
+
         return handlers;
     }
 
@@ -299,7 +320,7 @@ public without sharing class TDTM_DefaultConfig {
     * @description Any trigger handler classes that have been removed and should be deleted from a client
     * instance if they exist.
     */
-    public static final set<string> deletedClasses = new set<string>{'OPP_OpportunityNaming_TDTM'};
+    public static final set<string> deletedClasses = new set<string>{'OPP_OpportunityNaming_TDTM','UTIL_CascadeDeleteLookups_TDTM'};
 
     /*******************************************************************************************************
     * @description Specifies how the old NPSP settings match to the new Cumulus TDTM classes.

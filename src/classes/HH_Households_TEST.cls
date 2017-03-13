@@ -489,8 +489,9 @@ public with sharing class HH_Households_TEST {
     }
 
 /************************************ Not Used ***************************************
-    /// <name> getHouseholdTransactionTotal </name>
-    /// <summary>  </summary>
+    /*********************************************************************************************************
+    * @description 
+
     static testMethod void getHouseholdTransactionTotal_test()
     {
         npo02__Household__c h = new npo02__Household__c(Name='Test Household');
@@ -512,8 +513,8 @@ public with sharing class HH_Households_TEST {
         system.assertEquals(system.label.npo02.DefaultHouseholdTransactionCurrency + '100.00',HH_Households.getHouseholdTransactionTotal(h.id));
     }
     
-    /// <name> getHouseholdTransactionTotal </name>
-    /// <summary>  </summary>
+    /*********************************************************************************************************
+    * @description 
     static testMethod void getHouseholdLastTransaction_test()
     {
         Integer year = 2005;
@@ -793,4 +794,36 @@ public with sharing class HH_Households_TEST {
 
     }
 
+    /*********************************************************************************************************
+    * @description tests that case sensitive name changes on contacts update the Household name and greetings
+    */
+    public static testMethod void testCaseChanges() {
+        
+        npo02__Households_Settings__c householdSettingsForTests = UTIL_CustomSettingsFacade.getHouseholdsSettingsForTests
+            (new npo02__Households_Settings__c (npo02__Household_Rules__c = HH_Households.ALL_PROCESSOR, npo02__Advanced_Household_Naming__c = true));
+        
+        npe01__Contacts_and_Orgs_Settings__c contactSettingsForTests = UTIL_CustomSettingsFacade.getContactsSettingsForTests
+            (new npe01__Contacts_and_Orgs_Settings__c (npe01__Account_Processor__c = CAO_Constants.ONE_TO_ONE_PROCESSOR));
+  
+        Contact con = new Contact(firstname='joe', lastname='smith');
+        insert con;
+  
+        npo02__Household__c hh = [select Id, Name, npo02__Formal_greeting__c, npo02__Informal_greeting__c from npo02__Household__c];
+    
+        system.assertEquals('smith ' + system.label.npo02.DefaultHouseholdName, hh.Name);
+        system.assertEquals('joe smith', hh.npo02__Formal_greeting__c);
+        system.assertEquals('joe', hh.npo02__Informal_greeting__c);
+  
+        con.firstname = 'Joe';
+        con.lastname = 'Smith';
+        Test.startTest();
+        update con;
+        Test.stopTest();
+  
+        hh = [select Id, Name, npo02__Formal_greeting__c, npo02__Informal_greeting__c from npo02__Household__c];
+    
+        system.assertEquals('Smith ' + system.label.npo02.DefaultHouseholdName, hh.Name);
+        system.assertEquals('Joe Smith', hh.npo02__Formal_greeting__c);
+        system.assertEquals('Joe', hh.npo02__Informal_greeting__c);
+    }
 }

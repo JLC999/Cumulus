@@ -64,13 +64,10 @@ public with sharing class STG_SettingsManager_TEST {
         Test.startTest();
         ctrl.setTriggerSchedConfig();
         Test.stopTest();
-        
-        List<Schedulable__c> scheduledJobs = [select Class_Name__c from Schedulable__c];
-        System.assertEquals(UTIL_MasterSchedulableHelper.scheduledClasses.size(), scheduledJobs.size());
-        
+                
         List<CronTrigger> masterJobs = [select Id, CronJobDetail.Id from CronTrigger where CronJobDetail.Name IN 
-        :UTIL_MasterSchedulableHelper.scheduledJobs and CronJobDetail.JobType = '7'];
-        System.assertEquals(3, masterJobs.size());
+        :UTIL_MasterSchedulableHelper.defaultScheduledJobs.keySet() and CronJobDetail.JobType = '7'];
+        System.assertEquals(UTIL_MasterSchedulableHelper.defaultScheduledJobs.keySet().size(), masterJobs.size());
     }
      
     /*********************************************************************************************************
@@ -215,8 +212,12 @@ public with sharing class STG_SettingsManager_TEST {
         panel.saveSettings();
         system.assertEquals(true, UTIL_CustomSettingsFacade.getOrgContactsSettings().npe01__Enable_Opportunity_Contact_Role_Trigger__c);
         STG_Panel.stgService.stgCon.npe01__Enable_Opportunity_Contact_Role_Trigger__c = false;
+        STG_Panel.stgService.stgCon.npe01__Opportunity_Contact_Role_Default_role__c = 'Decision Maker';
+        STG_Panel.stgService.stgHH.npo02__Household_Contact_Roles_On__c = true;
+        STG_Panel.stgService.stgHH.npo02__Household_Member_Contact_Role__c = 'Decision Maker';
+        STG_Panel.stgService.stgHH.npo02__Soft_Credit_Roles__c = 'Decision Maker;Something Else';
         panel.saveSettings();
-        system.assertEquals(false, UTIL_CustomSettingsFacade.getOrgContactsSettings().npe01__Enable_Opportunity_Contact_Role_Trigger__c);
+        system.assertEquals(2, ApexPages.getMessages().size(), 'Two error messages should be created for identical the role values.' + ApexPages.getMessages());
     }
 
     /*********************************************************************************************************
@@ -421,26 +422,21 @@ public with sharing class STG_SettingsManager_TEST {
     */
     public static testMethod void testPanelRD() {
         if (strTestOnly != '*' && strTestOnly != 'testPanelRD') return;
-    	insert new Schedulable__c(Name = 'Recurring Donation Updates', 
-            Class_Name__c = 'RD_RecurringDonations_SCHED', Active__c = true, Frequency__c = 'Daily');
         STG_PanelRD_CTRL panel = new STG_PanelRD_CTRL();
         system.assertEquals('idPanelRD', panel.idPanel());
         panel.init();
-        system.assertEquals(true, panel.rdSched.Active__c);
         system.assertNotEquals(null, panel.listSORDCloseOptions);
         system.assertNotEquals(null, panel.listSORDCloseOptions);
         STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c = 10;
-        panel.isRDScheduleDisabled = true;
         system.assertEquals(null, panel.saveSettings());
         system.assertEquals(10, STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c);
-        system.assertEquals(false, [select Active__c from Schedulable__c
-            where Class_Name__c = 'RD_RecurringDonations_SCHED'][0].Active__c);
         STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c = 5;
         system.assertEquals(null, panel.saveSettings());
         system.assertEquals(5, STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c);
         STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c = 15;
         system.assertEquals(null, panel.saveSettings());
         system.assertEquals(15, STG_Panel.stgService.stgRD.npe03__Opportunity_Forecast_Months__c);
+        system.assertEquals(15, UTIL_CustomSettingsFacade.getOrgRecurringDonationsSettings().npe03__Opportunity_Forecast_Months__c);
     }
 
     /*********************************************************************************************************
@@ -800,10 +796,24 @@ public with sharing class STG_SettingsManager_TEST {
         npo02__Field_Action__c = 'TEST'
         );        
         insert badobject;
-        
-        
     }
     
+    /*********************************************************************************************************
+    * @description Tests the Schedule panel
+    * @return void
+    */
+    public static testMethod void testPanelSchedule() {
+        if (strTestOnly != '*' && strTestOnly != 'testPanelLeads') return;
+        STG_PanelSchedule_CTRL panel = new STG_PanelSchedule_CTRL();
+        system.assertEquals('idPanelSchedule', panel.idPanel());
+        STG_Panel.stgService.stgErr.Don_t_Auto_Schedule_Default_NPSP_Jobs__c = true;
+        panel.saveSettings();
+        system.assertEquals(true, UTIL_CustomSettingsFacade.getOrgErrorSettings().Don_t_Auto_Schedule_Default_NPSP_Jobs__c);
+        STG_Panel.stgService.stgErr.Don_t_Auto_Schedule_Default_NPSP_Jobs__c = false;
+        panel.saveSettings();
+        system.assertEquals(false, UTIL_CustomSettingsFacade.getOrgErrorSettings().Don_t_Auto_Schedule_Default_NPSP_Jobs__c);
+    }
+
     /*********************************************************************************************************
     * @description Tests the Trigger Handler panel
     * @return void
